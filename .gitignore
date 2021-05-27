@@ -3,3 +3,6 @@
 
 # data
 data/
+
+# mypy cache
+.mypy_cache/
