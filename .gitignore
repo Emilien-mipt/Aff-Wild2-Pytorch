@@ -1,1 +1,8 @@
+# Pycharm cache
 .idea/
+
+# data
+data/
+
+# mypy cache
+.mypy_cache/
