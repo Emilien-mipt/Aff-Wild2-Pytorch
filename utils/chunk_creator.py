@@ -25,6 +25,8 @@ class ChunkCreator:
         frame_index_array = np.array(frame_index_list)
         label_array = np.array(label_list)
         needed_labels = label_array[frame_index_array]
+        # Check that labels don't contain values [-5, 5], since corresponding frames are not annotated
+        needed_labels = np.array([x for x in needed_labels if (x[0] != -5 and x[1] != 5)])
         result_label_chunk = [
             needed_labels[x : x + self.seq_len]
             for x in range(0, len(needed_labels), self.seq_len)
@@ -85,8 +87,12 @@ class ChunkCreator:
 
 
 # TEST
-label_path = "data/annotations_VA/Train_Set"
 data_path = "data/dataset/Train_processed"
-test_preparator = ChunkCreator(path_data=data_path, path_label=label_path, seq_len=100)
+label_path = "data/annotations_VA/Train_Set"
+
+# data_path = "data/dataset/Val_processed"
+# label_path = "data/annotations_VA/Validation_Set"
+
+test_preparator = ChunkCreator(path_data=data_path, path_label=label_path, seq_len=80)
 test_preparator.form_result_list()
 test_preparator.print_size()
