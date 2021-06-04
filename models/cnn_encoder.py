@@ -5,8 +5,8 @@ from torchvision import models
 
 
 # 2D CNN encoder using ResNet-152 pretrained
-class ResCNNEncoder(nn.Module):
-    def __init__(self, fc_hidden1=512, fc_hidden2=512, drop_p=0.3, CNN_embed_dim=300):
+class CNNEncoder(nn.Module):
+    def __init__(self, fc_hidden1=512, fc_hidden2=512, drop_p=0.3, cnn_embed_dim=300):
         """Load the pretrained ResNet and replace top fc layer."""
         super().__init__()
 
@@ -20,7 +20,7 @@ class ResCNNEncoder(nn.Module):
         self.bn1 = nn.BatchNorm1d(fc_hidden1, momentum=0.01)
         self.fc2 = nn.Linear(fc_hidden1, fc_hidden2)
         self.bn2 = nn.BatchNorm1d(fc_hidden2, momentum=0.01)
-        self.fc3 = nn.Linear(fc_hidden2, CNN_embed_dim)
+        self.fc3 = nn.Linear(fc_hidden2, cnn_embed_dim)
 
     def forward(self, x_3d):
         cnn_embed_seq = []

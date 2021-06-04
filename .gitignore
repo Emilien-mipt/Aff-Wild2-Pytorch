@@ -9,3 +9,6 @@ data/
 
 # pycache
 __pycache__/
+
+# weights
+weights/

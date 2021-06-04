@@ -15,30 +15,30 @@ STD = [0.229, 0.224, 0.225]  # ImageNet values
 # ====================================================
 # Transforms
 # ====================================================
-def get_transforms(*, data):
+def get_transforms(*, mode, mean, std):
 
-    if data == "train":
+    if mode == "train":
         return Compose(
             [
                 HorizontalFlip(p=0.5),
-                Rotate(p=0.5, limit=(-30, 30)),
+                # Rotate(p=0.5, limit=(-30, 30)),
                 RandomBrightnessContrast(
                     p=0.5, brightness_limit=(-0.1, 0.1), contrast_limit=(-0.1, 0.1), brightness_by_max=False
                 ),
                 Normalize(
-                    mean=MEAN,
-                    std=STD,
+                    mean=mean,
+                    std=std,
                 ),
                 ToTensorV2(),
             ]
         )
 
-    elif data == "valid":
+    elif mode == "valid":
         return Compose(
             [
                 Normalize(
-                    mean=MEAN,
-                    std=STD,
+                    mean=mean,
+                    std=std,
                 ),
                 ToTensorV2(),
             ]
