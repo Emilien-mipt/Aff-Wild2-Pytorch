@@ -3,7 +3,7 @@ import torch.nn.functional as F
 
 
 class DecoderRNN(nn.Module):
-    def __init__(self, CNN_embed_dim=300, h_RNN_layers=3, h_RNN=256, h_FC_dim=128, drop_p=0.3, num_classes=50):
+    def __init__(self, CNN_embed_dim=300, h_RNN_layers=2, h_RNN=128, h_FC_dim=32, drop_p=0.3, num_outputs=2):
         super().__init__()
 
         self.RNN_input_size = CNN_embed_dim
@@ -11,18 +11,18 @@ class DecoderRNN(nn.Module):
         self.h_RNN = h_RNN  # RNN hidden nodes
         self.h_FC_dim = h_FC_dim
         self.drop_p = drop_p
-        self.num_classes = num_classes
+        self.num_outputs = num_outputs  # First value stands for Valence, second - for Arousal
 
         self.LSTM = nn.LSTM(
             input_size=self.RNN_input_size,
             hidden_size=self.h_RNN,
-            num_layers=h_RNN_layers,
+            num_layers=self.h_RNN_layers,
             batch_first=True,  # input & output will has batch size as 1s dimension.
             # e.g. (batch, time_step, input_size)
         )
 
         self.fc1 = nn.Linear(self.h_RNN, self.h_FC_dim)
-        self.fc2 = nn.Linear(self.h_FC_dim, self.num_classes)
+        self.fc2 = nn.Linear(self.h_FC_dim, self.num_outputs)
 
     def forward(self, x_RNN):
         self.LSTM.flatten_parameters()
