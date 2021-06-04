@@ -26,7 +26,7 @@ class AffWildDataset(Dataset):
                 image = augmented["image"]
             image_list.append(image)
 
-        label_list = [torch.tensor(label).long() for label in chunk_label]
+        label_list = [torch.tensor(label).float() for label in chunk_label]
 
         image_array = torch.stack(image_list, dim=0)
         label_array = torch.stack(label_list, dim=0)
