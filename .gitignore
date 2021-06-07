@@ -6,3 +6,9 @@ data/
 
 # mypy cache
 .mypy_cache/
+
+# pycache
+__pycache__/
+
+# weights
+weights/
