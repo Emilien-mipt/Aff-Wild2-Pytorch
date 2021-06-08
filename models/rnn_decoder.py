@@ -33,7 +33,6 @@ class RNNDecoder(nn.Module):
         # FC layers
         x = self.fc1(RNN_out[:, -1, :])  # choose RNN_out at the last time step
         x = F.relu(x)
-        x = F.dropout(x, p=self.drop_p, training=self.training)
         x = self.fc2(x)
 
         return x
