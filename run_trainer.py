@@ -78,7 +78,6 @@ def run_trainer(cfg):
         batch_size=batch_size,
         shuffle=True,
         num_workers=num_workers,
-        pin_memory=True,
         drop_last=True,
     )
 
@@ -98,7 +97,6 @@ def run_trainer(cfg):
         batch_size=batch_size,
         shuffle=False,
         num_workers=num_workers,
-        pin_memory=True,
         drop_last=False,
     )
 
@@ -139,12 +137,6 @@ def run_trainer(cfg):
     criterion = CCCLoss()
     optimizer = Adam(params=crnn_params, lr=cfg.optimizer.lr)
 
-    best_epoch = 0
-    best_valence_score = 0.0
-    best_arousal_score = 0.0
-
-    count_bad_epochs = 0  # Count epochs that don't improve the score
-
     # start training
     logger.info("Start training...")
     for epoch in range(cfg.train_params.n_epochs):
@@ -166,44 +158,15 @@ def run_trainer(cfg):
         logger.info(f"Epoch {epoch + 1} - Avg_train_loss: {avg_train_loss:.4f} time: {elapsed:.0f}s")
         logger.info(f"Epoch: {epoch + 1} - Val_valence: {avg_val_valence:.4f} - Val_arousal: {avg_val_arousal:.4f} ")
 
-        best_valence = False
-        best_arousal = False
-
-        # Update best score
-        if avg_val_valence >= best_valence_score:
-            best_valence_score = avg_val_valence
-            best_valence = True
-
-        if avg_val_arousal >= best_arousal_score:
-            best_arousal_score = avg_val_arousal
-            best_arousal = True
-
-        if best_valence and best_arousal:
-            logger.info(
-                f"Epoch {epoch + 1} - Save Best Valence: {best_valence_score:.4f} - \
-                           Save Best Arousal: {best_arousal_score:.4f} Model"
-            )
-            torch.save(
-                cnn_encoder.state_dict(), os.path.join("weights", "best_cnn_encoder.pth")
-            )  # save spatial_encoder
-            torch.save(
-                rnn_decoder.state_dict(), os.path.join("weights", "best_rnn_decoder.pth")
-            )  # save motion_encoder
-            best_epoch = epoch + 1
-            count_bad_epochs = 0
-        else:
-            count_bad_epochs += 1
-        print(count_bad_epochs)
-        # Early stopping
-        if count_bad_epochs > cfg.train_params.early_stop:
-            logger.info(
-                f"Stop the training, since the score has not improved for {cfg.train_params.early_stop} epochs!"
-            )
-            break
-    logger.info(
-        f"AFTER TRAINING: Best Epoch {best_epoch}: Best Valence: {best_valence_score:.4f} - \
-                    Best Arousal: {best_arousal_score:.4f}"
-    )
+        # Save weights
+        print("Saving weights...")
+        torch.save(
+            cnn_encoder.state_dict(), os.path.join("weights", f"best_cnn_encoder_{epoch+1}.pth")
+        )  # save spatial_encoder
+        torch.save(
+            rnn_decoder.state_dict(), os.path.join("weights", f"best_rnn_decoder_{epoch+1}.pth")
+        )  # save motion_encoder
+    tb.close()
 
 
 @hydra.main(config_path="conf", config_name="config")
