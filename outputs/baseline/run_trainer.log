@@ -1,0 +1,47 @@
+[2021-06-07 17:38:45,042][__main__][INFO] - Sequence length: 80
+[2021-06-07 17:38:45,042][__main__][INFO] - Device: 0
+[2021-06-07 17:38:45,042][__main__][INFO] - Batch size: 128
+[2021-06-07 17:39:03,046][__main__][INFO] - Start training...
+[2021-06-07 17:44:34,224][__main__][INFO] - Current learning rate: 0.001
+[2021-06-07 17:44:34,224][__main__][INFO] - Epoch 1 - Avg_train_loss: 0.5838 time: 331s
+[2021-06-07 17:44:34,224][__main__][INFO] - Epoch: 1 - Val_valence: 0.0473 - Val_arousal: 0.1968
+[2021-06-07 17:44:34,224][__main__][INFO] - Epoch 1 - Save Best Valence: 0.0473 -                            Save Best Arousal: 0.1968 Model
+[2021-06-07 17:50:01,609][__main__][INFO] - Current learning rate: 0.001
+[2021-06-07 17:50:01,609][__main__][INFO] - Epoch 2 - Avg_train_loss: 0.4422 time: 327s
+[2021-06-07 17:50:01,609][__main__][INFO] - Epoch: 2 - Val_valence: 0.1155 - Val_arousal: 0.2439
+[2021-06-07 17:50:01,610][__main__][INFO] - Epoch 2 - Save Best Valence: 0.1155 -                            Save Best Arousal: 0.2439 Model
+[2021-06-07 17:55:26,736][__main__][INFO] - Current learning rate: 0.001
+[2021-06-07 17:55:26,736][__main__][INFO] - Epoch 3 - Avg_train_loss: 0.3957 time: 325s
+[2021-06-07 17:55:26,736][__main__][INFO] - Epoch: 3 - Val_valence: 0.0655 - Val_arousal: 0.2504
+[2021-06-07 18:00:50,890][__main__][INFO] - Current learning rate: 0.001
+[2021-06-07 18:00:50,891][__main__][INFO] - Epoch 4 - Avg_train_loss: 0.3617 time: 324s
+[2021-06-07 18:00:50,891][__main__][INFO] - Epoch: 4 - Val_valence: 0.0793 - Val_arousal: 0.2450
+[2021-06-07 18:06:16,324][__main__][INFO] - Current learning rate: 0.001
+[2021-06-07 18:06:16,325][__main__][INFO] - Epoch 5 - Avg_train_loss: 0.3298 time: 325s
+[2021-06-07 18:06:16,325][__main__][INFO] - Epoch: 5 - Val_valence: 0.0768 - Val_arousal: 0.2268
+[2021-06-07 18:11:41,361][__main__][INFO] - Current learning rate: 0.001
+[2021-06-07 18:11:41,361][__main__][INFO] - Epoch 6 - Avg_train_loss: 0.3010 time: 325s
+[2021-06-07 18:11:41,361][__main__][INFO] - Epoch: 6 - Val_valence: 0.0923 - Val_arousal: 0.2147
+[2021-06-07 18:17:07,011][__main__][INFO] - Current learning rate: 0.001
+[2021-06-07 18:17:07,011][__main__][INFO] - Epoch 7 - Avg_train_loss: 0.2918 time: 326s
+[2021-06-07 18:17:07,011][__main__][INFO] - Epoch: 7 - Val_valence: 0.0862 - Val_arousal: 0.2298
+[2021-06-07 18:22:32,586][__main__][INFO] - Current learning rate: 0.001
+[2021-06-07 18:22:32,586][__main__][INFO] - Epoch 8 - Avg_train_loss: 0.2647 time: 326s
+[2021-06-07 18:22:32,586][__main__][INFO] - Epoch: 8 - Val_valence: 0.0869 - Val_arousal: 0.2458
+[2021-06-07 18:27:58,370][__main__][INFO] - Current learning rate: 0.001
+[2021-06-07 18:27:58,370][__main__][INFO] - Epoch 9 - Avg_train_loss: 0.2598 time: 326s
+[2021-06-07 18:27:58,370][__main__][INFO] - Epoch: 9 - Val_valence: 0.0371 - Val_arousal: 0.2398
+[2021-06-07 18:33:25,898][__main__][INFO] - Current learning rate: 0.001
+[2021-06-07 18:33:25,898][__main__][INFO] - Epoch 10 - Avg_train_loss: 0.2529 time: 328s
+[2021-06-07 18:33:25,898][__main__][INFO] - Epoch: 10 - Val_valence: 0.0560 - Val_arousal: 0.2468
+[2021-06-07 18:38:51,388][__main__][INFO] - Current learning rate: 0.001
+[2021-06-07 18:38:51,389][__main__][INFO] - Epoch 11 - Avg_train_loss: 0.2375 time: 325s
+[2021-06-07 18:38:51,389][__main__][INFO] - Epoch: 11 - Val_valence: 0.0536 - Val_arousal: 0.2140
+[2021-06-07 18:44:17,930][__main__][INFO] - Current learning rate: 0.001
+[2021-06-07 18:44:17,930][__main__][INFO] - Epoch 12 - Avg_train_loss: 0.2311 time: 327s
+[2021-06-07 18:44:17,931][__main__][INFO] - Epoch: 12 - Val_valence: 0.0753 - Val_arousal: 0.2501
+[2021-06-07 18:49:41,575][__main__][INFO] - Current learning rate: 0.001
+[2021-06-07 18:49:41,575][__main__][INFO] - Epoch 13 - Avg_train_loss: 0.2218 time: 324s
+[2021-06-07 18:49:41,575][__main__][INFO] - Epoch: 13 - Val_valence: 0.0693 - Val_arousal: 0.2195
+[2021-06-07 18:49:41,575][__main__][INFO] - Stop the training, since the score has not improved for 10 epochs!
+[2021-06-07 18:49:41,575][__main__][INFO] - AFTER TRAINING: Best Epoch 2: Best Valence: 0.1155 -                     Best Arousal: 0.2504

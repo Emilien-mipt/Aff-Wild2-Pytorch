@@ -200,7 +200,7 @@ def run_trainer(cfg):
                 f"Stop the training, since the score has not improved for {cfg.train_params.early_stop} epochs!"
             )
             break
-    print(
+    logger.info(
         f"AFTER TRAINING: Best Epoch {best_epoch}: Best Valence: {best_valence_score:.4f} - \
                     Best Arousal: {best_arousal_score:.4f}"
     )
