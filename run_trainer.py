@@ -17,7 +17,7 @@ from models.rnn_decoder import RNNDecoder
 from train import train_one_epoch, val_one_epoch
 from transforms import get_transforms
 from utils.chunk_creator import ChunkCreator
-from utils.utils import seed_torch
+from utils.utils import save_model, seed_torch
 
 
 def run_trainer(cfg):
@@ -160,12 +160,24 @@ def run_trainer(cfg):
 
         # Save weights
         print("Saving weights...")
-        torch.save(
-            cnn_encoder.state_dict(), os.path.join("weights", f"best_cnn_encoder_{epoch+1}.pth")
-        )  # save spatial_encoder
-        torch.save(
-            rnn_decoder.state_dict(), os.path.join("weights", f"best_rnn_decoder_{epoch+1}.pth")
-        )  # save motion_encoder
+        # save encoder weights
+        save_model(
+            cnn_encoder,
+            epoch + 1,
+            avg_train_loss,
+            avg_val_valence,
+            avg_val_arousal,
+            f"cnn_encoder_{epoch+1}.pth",
+        )
+        # save decoder weights
+        save_model(
+            rnn_decoder,
+            epoch + 1,
+            avg_train_loss,
+            avg_val_valence,
+            avg_val_arousal,
+            f"rnn_decoder_{epoch + 1}.pth",
+        )
     tb.close()
 
 

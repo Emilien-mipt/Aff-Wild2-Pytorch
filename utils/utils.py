@@ -52,3 +52,17 @@ def timeSince(since, percent):
     es = s / (percent)
     rs = es - s
     return "{} (remain {})".format(asMinutes(s), asMinutes(rs))
+
+
+def save_model(model, epoch, trainloss, valence, arousal, name):
+    """Saves PyTorch model."""
+    torch.save(
+        {
+            "model": model.state_dict(),
+            "epoch": epoch,
+            "train_loss": trainloss,
+            "val_valence": valence,
+            "val_arousal": arousal,
+        },
+        os.path.join("weights", name),
+    )
