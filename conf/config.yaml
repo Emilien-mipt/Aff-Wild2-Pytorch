@@ -13,12 +13,14 @@ train_params:
   num_workers: 8
 
 encoder_params:
+  chk: ""
   fc_hidden1: 512
   fc_hidden2: 512
   drop_out: 0.3
   embedding_dim: 300
 
 decoder_params:
+  chk: ""
   h_rnn_layers: 2
   rnn_nodes: 128
   fc_dim: 32

@@ -66,3 +66,30 @@ def save_model(model, epoch, trainloss, valence, arousal, name):
         },
         os.path.join("weights", name),
     )
+
+
+def load_model(model, path_to_model):
+    global valence
+    cp = torch.load(path_to_model)
+    epoch, train_loss, valence, arousal = None, None, None, None
+    if "model" in cp:
+        model.load_state_dict(cp["model"], strict=False)
+    if "epoch" in cp:
+        epoch = int(cp["epoch"])
+    if "train_loss" in cp:
+        train_loss = cp["train_loss"]
+    if "val_valence" in cp:
+        valence = cp["val_valence"]
+    if "val_arousal" in cp:
+        arousal = cp["val_arousal"]
+    print(
+        "Uploading model from the checkpoint...",
+        "\nEpoch:",
+        epoch,
+        "\nTrain Loss:",
+        train_loss,
+        "\nVal valence:",
+        valence,
+        "\nMetrics:",
+        arousal,
+    )

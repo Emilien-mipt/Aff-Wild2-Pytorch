@@ -17,7 +17,7 @@ from models.rnn_decoder import RNNDecoder
 from train import train_one_epoch, val_one_epoch
 from transforms import get_transforms
 from utils.chunk_creator import ChunkCreator
-from utils.utils import save_model, seed_torch
+from utils.utils import load_model, save_model, seed_torch
 
 
 def run_trainer(cfg):
@@ -116,9 +116,24 @@ def run_trainer(cfg):
 
     # Create model
     # Define CNN encoder
-    cnn_encoder = CNNEncoder(
-        fc_hidden1=fc_hidden1, fc_hidden2=fc_hidden2, drop_p=cnn_drop_out, cnn_embed_dim=embedding_dim
-    ).to(device)
+    if cfg.encoder_params.chk:
+        cnn_encoder = CNNEncoder(
+            fc_hidden1=fc_hidden1,
+            fc_hidden2=fc_hidden2,
+            drop_p=cnn_drop_out,
+            cnn_embed_dim=embedding_dim,
+            pretrain=False,
+        ).to(device)
+        load_model(cnn_encoder, cfg.encoder_params.chk)
+    else:
+        cnn_encoder = CNNEncoder(
+            fc_hidden1=fc_hidden1,
+            fc_hidden2=fc_hidden2,
+            drop_p=cnn_drop_out,
+            cnn_embed_dim=embedding_dim,
+            pretrain=True,
+        ).to(device)
+
     # Define RNN decoder
     rnn_decoder = RNNDecoder(
         cnn_embed_dim=embedding_dim,
@@ -128,6 +143,8 @@ def run_trainer(cfg):
         drop_p=rnn_drop_out,
         num_outputs=num_outputs,
     ).to(device)
+    if cfg.decoder_params.chk:
+        load_model(rnn_decoder, cfg.decoder_params.chk)
 
     # Combine all EncoderCNN + DecoderRNN parameters
     crnn_params = list(cnn_encoder.parameters()) + list(rnn_decoder.parameters())
