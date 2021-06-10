@@ -13,7 +13,7 @@ class RNNDecoder(nn.Module):
         self.drop_p = drop_p
         self.num_outputs = num_outputs  # First value stands for Valence, second - for Arousal
 
-        self.LSTM = nn.LSTM(
+        self.GRU = nn.GRU(
             input_size=self.RNN_input_size,
             hidden_size=self.h_RNN,
             num_layers=self.h_RNN_layers,
@@ -25,8 +25,8 @@ class RNNDecoder(nn.Module):
         self.fc2 = nn.Linear(self.h_FC_dim, self.num_outputs)
 
     def forward(self, x_RNN):
-        self.LSTM.flatten_parameters()
-        RNN_out, (h_n, h_c) = self.LSTM(x_RNN, None)
+        self.GRU.flatten_parameters()
+        RNN_out, (h_n, h_c) = self.GRU(x_RNN, None)
         """ h_n shape (n_layers, batch, hidden_size), h_c shape (n_layers, batch, hidden_size) """
         """ None represents zero initial hidden state. RNN_out has shape=(batch, time_step, output_size) """
 
