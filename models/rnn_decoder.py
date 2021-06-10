@@ -31,7 +31,7 @@ class RNNDecoder(nn.Module):
         """ None represents zero initial hidden state. RNN_out has shape=(batch, time_step, output_size) """
 
         # FC layers
-        x = self.fc1(RNN_out[:, -1, :])  # choose RNN_out at the last time step
+        x = self.fc1(RNN_out)
         x = F.relu(x)
         x = self.fc2(x)
 
