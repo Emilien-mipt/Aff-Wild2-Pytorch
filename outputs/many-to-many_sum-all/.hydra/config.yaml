@@ -13,7 +13,7 @@ dataset:
 train_params:
   seed: 2021
   batch_size: 128
-  n_epochs: 15
+  n_epochs: 30
   gpu_id: 1
   num_workers: 8
 encoder_params:

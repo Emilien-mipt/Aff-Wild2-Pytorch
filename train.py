@@ -5,7 +5,7 @@ from tqdm import tqdm
 
 from utils.utils import AverageMeter, timeSince
 
-print_freq = 5
+print_freq = 3
 
 
 def train_one_epoch(epoch, model, device, train_loader, criterion, optimizer):
