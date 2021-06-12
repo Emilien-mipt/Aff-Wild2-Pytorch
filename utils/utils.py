@@ -69,7 +69,6 @@ def save_model(model, epoch, trainloss, valence, arousal, name):
 
 
 def load_model(model, path_to_model):
-    global valence
     cp = torch.load(path_to_model)
     epoch, train_loss, valence, arousal = None, None, None, None
     if "model" in cp:
@@ -93,3 +92,4 @@ def load_model(model, path_to_model):
         "\nMetrics:",
         arousal,
     )
+    return cp

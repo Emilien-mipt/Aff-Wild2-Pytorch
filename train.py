@@ -5,7 +5,7 @@ from tqdm import tqdm
 
 from utils.utils import AverageMeter, timeSince
 
-print_freq = 3
+print_freq = 5
 
 
 def train_one_epoch(epoch, model, device, train_loader, criterion, optimizer):
@@ -26,18 +26,20 @@ def train_one_epoch(epoch, model, device, train_loader, criterion, optimizer):
         optimizer.zero_grad()
         # distribute data to device
         images, labels = images.to(device), labels.to(device)
+        # Select last target from the sequence
+        labels = labels[:, -1, :]
 
         batch_size = images.size(0)
 
-        # print("Input size: ", images.shape)
-        # print("Target size: ", labels.shape)
+        #  print("Input size: ", images.shape)
+        #  print("Target size: ", labels.shape)
 
         # Forward
         output = rnn_decoder(cnn_encoder(images))  # output has dim = (batch, number of classes)
-        # print("Output size: ", output.shape)
-        valence_loss = criterion(output[:, :, 0], labels[:, :, 0])
-        # print("Loss size: ", valence_loss.shape)
-        arousal_loss = criterion(output[:, :, 1], labels[:, :, 1])
+        #  print("Output size: ", output.shape)
+        valence_loss = criterion(output[:, 0], labels[:, 0])
+        #  print("Loss size: ", valence_loss.shape)
+        arousal_loss = criterion(output[:, 1], labels[:, 1])
         # Compute loss
         loss = 1 - (valence_loss + arousal_loss) / 2.0
         # Backward
@@ -79,13 +81,15 @@ def val_one_epoch(valid_loader, model, criterion, device):
         data_time.update(time.time() - end)
         images = images.to(device)
         labels = labels.to(device)
+        # Select last target from the sequence
+        labels = labels[:, -1, :]
 
         batch_size = labels.size(0)
         # compute loss
         with torch.no_grad():
             output = rnn_decoder(cnn_encoder(images))  # output has dim = (batch, number of classes)
-            valence_loss = criterion(output[:, :, 0], labels[:, :, 0])
-            arousal_loss = criterion(output[:, :, 1], labels[:, :, 1])
+            valence_loss = criterion(output[:, 0], labels[:, 0])
+            arousal_loss = criterion(output[:, 1], labels[:, 1])
         valence.update(valence_loss.item(), batch_size)
         arousal.update(arousal_loss.item(), batch_size)
         # measure elapsed time
