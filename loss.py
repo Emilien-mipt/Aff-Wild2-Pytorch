@@ -19,7 +19,7 @@ class CCCLoss(nn.Module):
         var_gt = self.var(ground_truth)
         var_pred = self.var(prediction)
         v_pred = prediction - mean_pred
-        v_gt = ground_truth - var_pred
+        v_gt = ground_truth - mean_gt
         cor = self.sum(v_pred * v_gt) / (self.sqrt(self.sum(v_pred ** 2)) * self.sqrt(self.sum(v_gt ** 2)))
         sd_gt = self.std(ground_truth)
         sd_pred = self.std(prediction)
