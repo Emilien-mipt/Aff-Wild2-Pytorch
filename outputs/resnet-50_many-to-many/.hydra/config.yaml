@@ -13,16 +13,18 @@ dataset:
 train_params:
   seed: 2021
   batch_size: 128
-  n_epochs: 30
-  gpu_id: 1
+  n_epochs: 20
+  gpu_id: 0
   num_workers: 8
 encoder_params:
+  torch_script_path: ''
   chk: ''
   fc_hidden1: 512
   fc_hidden2: 512
   drop_out: 0.3
   embedding_dim: 300
 decoder_params:
+  torch_script_path: ''
   chk: ''
   h_rnn_layers: 2
   rnn_nodes: 128
