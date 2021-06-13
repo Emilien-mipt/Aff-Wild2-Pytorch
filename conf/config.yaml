@@ -6,6 +6,7 @@ dataset:
   std: [0.229, 0.224, 0.225]
 
 train_params:
+  debug: False
   seed: 2021
   batch_size: 128
   n_epochs: 15

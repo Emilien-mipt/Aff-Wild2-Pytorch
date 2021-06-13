@@ -68,6 +68,11 @@ def run_trainer(cfg):
     train_image_paths = train_data_chunks.result_image_paths
     train_labels = train_data_chunks.result_labels
 
+    if cfg.train_params.debug:
+        logger.info("Apply debug mode")
+        train_image_paths = train_image_paths[:1000]
+        train_labels = train_labels[:1000]
+
     train_dataset = AffWildDataset(
         image_paths_list=train_image_paths,
         labels_list=train_labels,
