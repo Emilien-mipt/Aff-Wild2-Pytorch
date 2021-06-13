@@ -3,6 +3,7 @@ import time
 import torch
 from tqdm import tqdm
 
+from loss import ccc_score
 from utils.utils import AverageMeter, timeSince
 
 print_freq = 5
@@ -34,7 +35,7 @@ def train_one_epoch(epoch, model, device, train_loader, criterion, optimizer):
         valence_loss = criterion(output[:, :, 0], labels[:, :, 0])
         arousal_loss = criterion(output[:, :, 1], labels[:, :, 1])
         # Compute loss
-        loss = 1 - (valence_loss + arousal_loss) / 2.0
+        loss = 0.5 * (valence_loss + arousal_loss)
         # Backward
         loss.backward()
         optimizer.step()
@@ -79,10 +80,17 @@ def val_one_epoch(valid_loader, model, criterion, device):
         # compute loss
         with torch.no_grad():
             output = rnn_decoder(cnn_encoder(images))  # output has dim = (batch, number of classes)
-            valence_loss = criterion(output[:, :, 0], labels[:, :, 0])
-            arousal_loss = criterion(output[:, :, 1], labels[:, :, 1])
-        valence.update(valence_loss.item(), batch_size)
-        arousal.update(arousal_loss.item(), batch_size)
+            # Calculate Valence and Arousal scores
+            valence_pred = output[:, :, 0].to("cpu").numpy()
+            valence_label = labels[:, :, 0].to("cpu").numpy()
+            arousal_pred = output[:, :, 1].to("cpu").numpy()
+            arousal_label = labels[:, :, 1].to("cpu").numpy()
+
+            valence_score = ccc_score(valence_pred, valence_label)
+            arousal_score = ccc_score(arousal_pred, arousal_label)
+        # Update scores
+        valence.update(valence_score, batch_size)
+        arousal.update(arousal_score, batch_size)
         # measure elapsed time
         batch_time.update(time.time() - end)
         end = time.time()
