@@ -5,6 +5,7 @@ import time
 import hydra
 import numpy as np
 import torch
+import torch.nn as nn
 from omegaconf import DictConfig
 from torch.optim import Adam
 from torch.utils.data import DataLoader
@@ -156,7 +157,19 @@ def run_trainer(cfg):
 
     model = [cnn_encoder, rnn_decoder]
 
-    criterion = CCCLoss()
+    # Choose criterion
+    if cfg.train_params.criterion == "ccc":
+        criterion = CCCLoss()
+        metric = "ccc"
+    elif cfg.train_params.criterion == "mse":
+        criterion = nn.MSELoss()
+        metric = "mse"
+    else:
+        raise ValueError("WTF criterion?")
+
+    logger.info(f"Criterion is set to {cfg.train_params.criterion}")
+
+    # Choose optimizer
     optimizer = Adam(params=crnn_params, lr=cfg.optimizer.lr)
 
     # start training
@@ -165,7 +178,7 @@ def run_trainer(cfg):
         start_time = time.time()
         avg_train_loss = train_one_epoch(epoch, model, device, train_loader, criterion, optimizer)
         print("Validating...")
-        avg_val_valence, avg_val_arousal = val_one_epoch(val_loader, model, criterion, device)
+        avg_val_valence, avg_val_arousal = val_one_epoch(val_loader, model, metric, device)
         elapsed = time.time() - start_time
 
         cur_lr = optimizer.param_groups[0]["lr"]

@@ -1,6 +1,6 @@
 hydra:
   run:
-    dir: outputs/cnn_encoder-resnet50_2/
+    dir: outputs/cnn_encoder-resnet50_single_ccc/
   sweep:
     dir: multirun/${now:%Y-%m-%d}/${now:%H-%M-%S}
     subdir: ${hydra.job.num}

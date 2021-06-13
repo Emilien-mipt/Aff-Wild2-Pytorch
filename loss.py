@@ -40,3 +40,7 @@ def ccc_score(x, y):
     y_s = np.std(y)
     ccc = 2 * rho * x_s * y_s / (x_s ** 2 + y_s ** 2 + (x_m - y_m) ** 2)
     return ccc
+
+
+def mse_score(x, y):
+    return (np.square(x - y)).mean()

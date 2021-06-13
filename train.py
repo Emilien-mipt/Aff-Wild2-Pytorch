@@ -3,7 +3,7 @@ import time
 import torch
 from tqdm import tqdm
 
-from loss import ccc_score
+from loss import ccc_score, mse_score
 from utils.utils import AverageMeter, timeSince
 
 print_freq = 5
@@ -60,7 +60,7 @@ def train_one_epoch(epoch, model, device, train_loader, criterion, optimizer):
     return losses.avg
 
 
-def val_one_epoch(valid_loader, model, criterion, device):
+def val_one_epoch(valid_loader, model, metric, device):
     batch_time = AverageMeter()
     data_time = AverageMeter()
     valence = AverageMeter()
@@ -85,9 +85,14 @@ def val_one_epoch(valid_loader, model, criterion, device):
             valence_label = labels[:, :, 0].to("cpu").numpy()
             arousal_pred = output[:, :, 1].to("cpu").numpy()
             arousal_label = labels[:, :, 1].to("cpu").numpy()
-
-            valence_score = ccc_score(valence_pred, valence_label)
-            arousal_score = ccc_score(arousal_pred, arousal_label)
+            if metric == "ccc":
+                valence_score = ccc_score(valence_pred, valence_label)
+                arousal_score = ccc_score(arousal_pred, arousal_label)
+            elif metric == "mse":
+                valence_score = mse_score(valence_pred, valence_label)
+                arousal_score = mse_score(arousal_pred, arousal_label)
+            else:
+                raise ValueError("WTF metric?")
         # Update scores
         valence.update(valence_score, batch_size)
         arousal.update(arousal_score, batch_size)
