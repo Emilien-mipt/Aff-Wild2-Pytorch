@@ -20,6 +20,7 @@ encoder_params:
   fc_hidden2: 512
   drop_out: 0.3
   embedding_dim: 300
+  torch_script_path: ""
 
 decoder_params:
   chk: ""
@@ -28,6 +29,7 @@ decoder_params:
   fc_dim: 32
   drop_out: 0.3
   num_outputs: 2
+  torch_script_path: ""
 
 optimizer:
   lr: 1e-3
