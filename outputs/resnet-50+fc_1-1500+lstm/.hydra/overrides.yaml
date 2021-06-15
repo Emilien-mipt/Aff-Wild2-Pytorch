@@ -1,0 +1,2 @@
+- encoder_params.fc_hidden1=1500
+- encoder_params.drop_out=0.5

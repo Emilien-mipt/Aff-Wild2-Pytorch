@@ -6,21 +6,19 @@ from torchvision import models
 
 # 2D CNN encoder using ResNet-152 pretrained
 class CNNEncoder(nn.Module):
-    def __init__(self, fc_hidden1=512, fc_hidden2=512, drop_p=0.3, cnn_embed_dim=300, pretrain=False):
+    def __init__(self, fc_hidden1=1500, drop_p=0.5, pretrain=False):
         """Load the pretrained ResNet and replace top fc layer."""
         super().__init__()
 
-        self.fc_hidden1, self.fc_hidden2 = fc_hidden1, fc_hidden2
+        self.fc_hidden1 = fc_hidden1
         self.drop_p = drop_p
 
         resnet = models.resnet50(pretrained=pretrain)
         modules = list(resnet.children())[:-1]  # delete the last fc layer.
         self.resnet = nn.Sequential(*modules)
         self.fc1 = nn.Linear(resnet.fc.in_features, fc_hidden1)
-        self.bn1 = nn.BatchNorm1d(fc_hidden1, momentum=0.01)
-        self.fc2 = nn.Linear(fc_hidden1, fc_hidden2)
-        self.bn2 = nn.BatchNorm1d(fc_hidden2, momentum=0.01)
-        self.fc3 = nn.Linear(fc_hidden2, cnn_embed_dim)
+        self.act1 = nn.ReLU()
+        self.dropout = nn.Dropout(p=self.drop_p)
 
     def forward(self, x_3d):
         cnn_embed_seq = []
@@ -31,12 +29,9 @@ class CNNEncoder(nn.Module):
                 x = x.view(x.size(0), -1)  # flatten output of conv
 
             # FC layers
-            x = self.bn1(self.fc1(x))
-            x = F.relu(x)
-            x = self.bn2(self.fc2(x))
-            x = F.relu(x)
-            x = F.dropout(x, p=self.drop_p, training=self.training)
-            x = self.fc3(x)
+            x = self.fc1(x)
+            x = self.act1(x)
+            x = self.dropout(x)
 
             cnn_embed_seq.append(x)
 

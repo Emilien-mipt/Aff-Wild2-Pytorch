@@ -17,9 +17,7 @@ train_params:
 encoder_params:
   chk: ""
   fc_hidden1: 512
-  fc_hidden2: 512
   drop_out: 0.3
-  embedding_dim: 300
   torch_script_path: ""
 
 decoder_params:

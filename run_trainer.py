@@ -109,9 +109,7 @@ def run_trainer(cfg):
     # Model params
     # Encoder params
     fc_hidden1 = cfg.encoder_params.fc_hidden1
-    fc_hidden2 = cfg.encoder_params.fc_hidden2
     cnn_drop_out = cfg.encoder_params.drop_out
-    embedding_dim = cfg.encoder_params.embedding_dim
 
     # Decoder params
     h_rnn_layers = cfg.decoder_params.h_rnn_layers  # Number of hidden layers
@@ -125,24 +123,20 @@ def run_trainer(cfg):
     if cfg.encoder_params.chk:
         cnn_encoder = CNNEncoder(
             fc_hidden1=fc_hidden1,
-            fc_hidden2=fc_hidden2,
             drop_p=cnn_drop_out,
-            cnn_embed_dim=embedding_dim,
             pretrain=False,
         ).to(device)
         load_model(cnn_encoder, cfg.encoder_params.chk)
     else:
         cnn_encoder = CNNEncoder(
             fc_hidden1=fc_hidden1,
-            fc_hidden2=fc_hidden2,
             drop_p=cnn_drop_out,
-            cnn_embed_dim=embedding_dim,
             pretrain=True,
         ).to(device)
 
     # Define RNN decoder
     rnn_decoder = RNNDecoder(
-        cnn_embed_dim=embedding_dim,
+        cnn_embed_dim=fc_hidden1,
         h_rnn_layers=h_rnn_layers,
         h_rnn=h_rnn_nodes,
         h_fc_dim=fc_dim,
