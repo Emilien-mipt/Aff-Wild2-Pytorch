@@ -5,6 +5,7 @@ import time
 import hydra
 import numpy as np
 import torch
+import torch.nn as nn
 from omegaconf import DictConfig
 from torch.optim import Adam
 from torch.utils.data import DataLoader
@@ -17,7 +18,7 @@ from models.rnn_decoder import RNNDecoder
 from train import train_one_epoch, val_one_epoch
 from transforms import get_transforms
 from utils.chunk_creator import ChunkCreator
-from utils.utils import seed_torch
+from utils.utils import load_model, save_model, seed_torch
 
 
 def run_trainer(cfg):
@@ -68,6 +69,11 @@ def run_trainer(cfg):
     train_image_paths = train_data_chunks.result_image_paths
     train_labels = train_data_chunks.result_labels
 
+    if cfg.train_params.debug:
+        logger.info("Apply debug mode")
+        train_image_paths = train_image_paths[:1000]
+        train_labels = train_labels[:1000]
+
     train_dataset = AffWildDataset(
         image_paths_list=train_image_paths,
         labels_list=train_labels,
@@ -78,7 +84,6 @@ def run_trainer(cfg):
         batch_size=batch_size,
         shuffle=True,
         num_workers=num_workers,
-        pin_memory=True,
         drop_last=True,
     )
 
@@ -98,7 +103,6 @@ def run_trainer(cfg):
         batch_size=batch_size,
         shuffle=False,
         num_workers=num_workers,
-        pin_memory=True,
         drop_last=False,
     )
 
@@ -118,9 +122,24 @@ def run_trainer(cfg):
 
     # Create model
     # Define CNN encoder
-    cnn_encoder = CNNEncoder(
-        fc_hidden1=fc_hidden1, fc_hidden2=fc_hidden2, drop_p=cnn_drop_out, cnn_embed_dim=embedding_dim
-    ).to(device)
+    if cfg.encoder_params.chk:
+        cnn_encoder = CNNEncoder(
+            fc_hidden1=fc_hidden1,
+            fc_hidden2=fc_hidden2,
+            drop_p=cnn_drop_out,
+            cnn_embed_dim=embedding_dim,
+            pretrain=False,
+        ).to(device)
+        load_model(cnn_encoder, cfg.encoder_params.chk)
+    else:
+        cnn_encoder = CNNEncoder(
+            fc_hidden1=fc_hidden1,
+            fc_hidden2=fc_hidden2,
+            drop_p=cnn_drop_out,
+            cnn_embed_dim=embedding_dim,
+            pretrain=True,
+        ).to(device)
+
     # Define RNN decoder
     rnn_decoder = RNNDecoder(
         cnn_embed_dim=embedding_dim,
@@ -130,20 +149,28 @@ def run_trainer(cfg):
         drop_p=rnn_drop_out,
         num_outputs=num_outputs,
     ).to(device)
+    if cfg.decoder_params.chk:
+        load_model(rnn_decoder, cfg.decoder_params.chk)
 
     # Combine all EncoderCNN + DecoderRNN parameters
     crnn_params = list(cnn_encoder.parameters()) + list(rnn_decoder.parameters())
 
     model = [cnn_encoder, rnn_decoder]
 
-    criterion = CCCLoss()
+    # Choose criterion
+    if cfg.train_params.criterion == "ccc":
+        criterion = CCCLoss()
+        metric = "ccc"
+    elif cfg.train_params.criterion == "mse":
+        criterion = nn.MSELoss()
+        metric = "mse"
+    else:
+        raise ValueError("WTF criterion?")
+
+    logger.info(f"Criterion is set to {cfg.train_params.criterion}")
+
+    # Choose optimizer
     optimizer = Adam(params=crnn_params, lr=cfg.optimizer.lr)
-
-    best_epoch = 0
-    best_valence_score = 0.0
-    best_arousal_score = 0.0
-
-    count_bad_epochs = 0  # Count epochs that don't improve the score
 
     # start training
     logger.info("Start training...")
@@ -151,7 +178,7 @@ def run_trainer(cfg):
         start_time = time.time()
         avg_train_loss = train_one_epoch(epoch, model, device, train_loader, criterion, optimizer)
         print("Validating...")
-        avg_val_valence, avg_val_arousal = val_one_epoch(val_loader, model, criterion, device)
+        avg_val_valence, avg_val_arousal = val_one_epoch(val_loader, model, metric, device)
         elapsed = time.time() - start_time
 
         cur_lr = optimizer.param_groups[0]["lr"]
@@ -166,44 +193,27 @@ def run_trainer(cfg):
         logger.info(f"Epoch {epoch + 1} - Avg_train_loss: {avg_train_loss:.4f} time: {elapsed:.0f}s")
         logger.info(f"Epoch: {epoch + 1} - Val_valence: {avg_val_valence:.4f} - Val_arousal: {avg_val_arousal:.4f} ")
 
-        best_valence = False
-        best_arousal = False
-
-        # Update best score
-        if avg_val_valence >= best_valence_score:
-            best_valence_score = avg_val_valence
-            best_valence = True
-
-        if avg_val_arousal >= best_arousal_score:
-            best_arousal_score = avg_val_arousal
-            best_arousal = True
-
-        if best_valence and best_arousal:
-            logger.info(
-                f"Epoch {epoch + 1} - Save Best Valence: {best_valence_score:.4f} - \
-                           Save Best Arousal: {best_arousal_score:.4f} Model"
-            )
-            torch.save(
-                cnn_encoder.state_dict(), os.path.join("weights", "best_cnn_encoder.pth")
-            )  # save spatial_encoder
-            torch.save(
-                rnn_decoder.state_dict(), os.path.join("weights", "best_rnn_decoder.pth")
-            )  # save motion_encoder
-            best_epoch = epoch + 1
-            count_bad_epochs = 0
-        else:
-            count_bad_epochs += 1
-        print(count_bad_epochs)
-        # Early stopping
-        if count_bad_epochs > cfg.train_params.early_stop:
-            logger.info(
-                f"Stop the training, since the score has not improved for {cfg.train_params.early_stop} epochs!"
-            )
-            break
-    print(
-        f"AFTER TRAINING: Best Epoch {best_epoch}: Best Valence: {best_valence_score:.4f} - \
-                    Best Arousal: {best_arousal_score:.4f}"
-    )
+        # Save weights
+        print("Saving weights...")
+        # save encoder weights
+        save_model(
+            cnn_encoder,
+            epoch + 1,
+            avg_train_loss,
+            avg_val_valence,
+            avg_val_arousal,
+            f"cnn_encoder_{epoch+1}.pth",
+        )
+        # save decoder weights
+        save_model(
+            rnn_decoder,
+            epoch + 1,
+            avg_train_loss,
+            avg_val_valence,
+            avg_val_arousal,
+            f"rnn_decoder_{epoch + 1}.pth",
+        )
+    tb.close()
 
 
 @hydra.main(config_path="conf", config_name="config")

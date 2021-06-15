@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 import torch.nn as nn
 
@@ -14,10 +15,10 @@ class CCCLoss(nn.Module):
         self.std = torch.std
 
     def forward(self, prediction, ground_truth):
-        mean_gt = self.mean(ground_truth, 0)
-        mean_pred = self.mean(prediction, 0)
-        var_gt = self.var(ground_truth, 0)
-        var_pred = self.var(prediction, 0)
+        mean_gt = self.mean(ground_truth)
+        mean_pred = self.mean(prediction)
+        var_gt = self.var(ground_truth)
+        var_pred = self.var(prediction)
         v_pred = prediction - mean_pred
         v_gt = ground_truth - mean_gt
         cor = self.sum(v_pred * v_gt) / (self.sqrt(self.sum(v_pred ** 2)) * self.sqrt(self.sum(v_gt ** 2)))
@@ -26,4 +27,20 @@ class CCCLoss(nn.Module):
         numerator = 2 * cor * sd_gt * sd_pred
         denominator = var_gt + var_pred + (mean_gt - mean_pred) ** 2
         ccc = numerator / denominator
-        return ccc
+        return 1 - ccc
+
+
+def ccc_score(x, y):
+    x_m = np.mean(x)
+    y_m = np.mean(y)
+    vx = x - x_m
+    vy = y - y_m
+    rho = np.sum(vx * vy) / (np.sqrt(np.sum(vx ** 2)) * np.sqrt(np.sum(vy ** 2)))
+    x_s = np.std(x)
+    y_s = np.std(y)
+    ccc = 2 * rho * x_s * y_s / (x_s ** 2 + y_s ** 2 + (x_m - y_m) ** 2)
+    return ccc
+
+
+def mse_score(x, y):
+    return (np.square(x - y)).mean()

@@ -3,6 +3,7 @@ import time
 import torch
 from tqdm import tqdm
 
+from loss import ccc_score, mse_score
 from utils.utils import AverageMeter, timeSince
 
 print_freq = 5
@@ -19,23 +20,22 @@ def train_one_epoch(epoch, model, device, train_loader, criterion, optimizer):
     start = end = time.time()
 
     # Iterate over dataloader
-    for batch_idx, (x, y) in enumerate(tqdm(train_loader)):
+    for batch_idx, (images, labels) in enumerate(tqdm(train_loader)):
         # measure data loading time
         data_time.update(time.time() - end)
         # zero the gradients
         optimizer.zero_grad()
         # distribute data to device
-        x, y = x.to(device), y.to(device)
-        # Select last target from the sequence
-        y = y[:, -1, :]
-        batch_size = x.size(0)
+        images, labels = images.to(device), labels.to(device)
+
+        batch_size = images.size(0)
 
         # Forward
-        output = rnn_decoder(cnn_encoder(x))  # output has dim = (batch, number of classes)
-        valence_loss = criterion(output[:, 0], y[:, 0])
-        arousal_loss = criterion(output[:, 1], y[:, 1])
+        output = rnn_decoder(cnn_encoder(images))  # output has dim = (batch, number of classes (valence, arousal))
+        valence_loss = criterion(output[:, :, 0], labels[:, :, 0])
+        arousal_loss = criterion(output[:, :, 1], labels[:, :, 1])
         # Compute loss
-        loss = 1 - (valence_loss + arousal_loss) / 2.0
+        loss = 0.5 * (valence_loss + arousal_loss)
         # Backward
         loss.backward()
         optimizer.step()
@@ -60,7 +60,7 @@ def train_one_epoch(epoch, model, device, train_loader, criterion, optimizer):
     return losses.avg
 
 
-def val_one_epoch(valid_loader, model, criterion, device):
+def val_one_epoch(valid_loader, model, metric, device):
     batch_time = AverageMeter()
     data_time = AverageMeter()
     valence = AverageMeter()
@@ -75,16 +75,27 @@ def val_one_epoch(valid_loader, model, criterion, device):
         data_time.update(time.time() - end)
         images = images.to(device)
         labels = labels.to(device)
-        # Select last target from the sequence
-        labels = labels[:, -1, :]
+
         batch_size = labels.size(0)
         # compute loss
         with torch.no_grad():
             output = rnn_decoder(cnn_encoder(images))  # output has dim = (batch, number of classes)
-            valence_loss = criterion(output[:, 0], labels[:, 0])
-            arousal_loss = criterion(output[:, 1], labels[:, 1])
-        valence.update(valence_loss.item(), batch_size)
-        arousal.update(arousal_loss.item(), batch_size)
+            # Calculate Valence and Arousal scores
+            valence_pred = output[:, :, 0].to("cpu").numpy()
+            valence_label = labels[:, :, 0].to("cpu").numpy()
+            arousal_pred = output[:, :, 1].to("cpu").numpy()
+            arousal_label = labels[:, :, 1].to("cpu").numpy()
+            if metric == "ccc":
+                valence_score = ccc_score(valence_pred, valence_label)
+                arousal_score = ccc_score(arousal_pred, arousal_label)
+            elif metric == "mse":
+                valence_score = mse_score(valence_pred, valence_label)
+                arousal_score = mse_score(arousal_pred, arousal_label)
+            else:
+                raise ValueError("WTF metric?")
+        # Update scores
+        valence.update(valence_score, batch_size)
+        arousal.update(arousal_score, batch_size)
         # measure elapsed time
         batch_time.update(time.time() - end)
         end = time.time()

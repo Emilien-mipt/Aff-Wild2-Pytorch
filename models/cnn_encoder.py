@@ -6,14 +6,14 @@ from torchvision import models
 
 # 2D CNN encoder using ResNet-152 pretrained
 class CNNEncoder(nn.Module):
-    def __init__(self, fc_hidden1=512, fc_hidden2=512, drop_p=0.3, cnn_embed_dim=300):
+    def __init__(self, fc_hidden1=512, fc_hidden2=512, drop_p=0.3, cnn_embed_dim=300, pretrain=False):
         """Load the pretrained ResNet and replace top fc layer."""
         super().__init__()
 
         self.fc_hidden1, self.fc_hidden2 = fc_hidden1, fc_hidden2
         self.drop_p = drop_p
 
-        resnet = models.resnet34(pretrained=True)
+        resnet = models.resnet50(pretrained=pretrain)
         modules = list(resnet.children())[:-1]  # delete the last fc layer.
         self.resnet = nn.Sequential(*modules)
         self.fc1 = nn.Linear(resnet.fc.in_features, fc_hidden1)

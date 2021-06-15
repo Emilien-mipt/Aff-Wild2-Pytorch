@@ -52,3 +52,44 @@ def timeSince(since, percent):
     es = s / (percent)
     rs = es - s
     return "{} (remain {})".format(asMinutes(s), asMinutes(rs))
+
+
+def save_model(model, epoch, trainloss, valence, arousal, name):
+    """Saves PyTorch model."""
+    torch.save(
+        {
+            "model": model.state_dict(),
+            "epoch": epoch,
+            "train_loss": trainloss,
+            "val_valence": valence,
+            "val_arousal": arousal,
+        },
+        os.path.join("weights", name),
+    )
+
+
+def load_model(model, path_to_model):
+    cp = torch.load(path_to_model)
+    epoch, train_loss, valence, arousal = None, None, None, None
+    if "model" in cp:
+        model.load_state_dict(cp["model"], strict=False)
+    if "epoch" in cp:
+        epoch = int(cp["epoch"])
+    if "train_loss" in cp:
+        train_loss = cp["train_loss"]
+    if "val_valence" in cp:
+        valence = cp["val_valence"]
+    if "val_arousal" in cp:
+        arousal = cp["val_arousal"]
+    print(
+        "Uploading model from the checkpoint...",
+        "\nEpoch:",
+        epoch,
+        "\nTrain Loss:",
+        train_loss,
+        "\nVal valence:",
+        valence,
+        "\nMetrics:",
+        arousal,
+    )
+    return cp
