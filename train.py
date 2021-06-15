@@ -28,12 +28,15 @@ def train_one_epoch(epoch, model, device, train_loader, criterion, optimizer):
         # distribute data to device
         images, labels = images.to(device), labels.to(device)
 
+        labels = labels[:, -1, :]
+
         batch_size = images.size(0)
 
         # Forward
         output = rnn_decoder(cnn_encoder(images))  # output has dim = (batch, number of classes (valence, arousal))
-        valence_loss = criterion(output[:, :, 0], labels[:, :, 0])
-        arousal_loss = criterion(output[:, :, 1], labels[:, :, 1])
+        output = output[:, -1, :]
+        valence_loss = criterion(output[:, 0], labels[:, 0])
+        arousal_loss = criterion(output[:, 1], labels[:, 1])
         # Compute loss
         loss = 0.5 * (valence_loss + arousal_loss)
         # Backward
@@ -76,15 +79,18 @@ def val_one_epoch(valid_loader, model, metric, device):
         images = images.to(device)
         labels = labels.to(device)
 
+        labels = labels[:, -1, :]
+
         batch_size = labels.size(0)
         # compute loss
         with torch.no_grad():
             output = rnn_decoder(cnn_encoder(images))  # output has dim = (batch, number of classes)
+            output = output[:, -1, :]
             # Calculate Valence and Arousal scores
-            valence_pred = output[:, :, 0].to("cpu").numpy()
-            valence_label = labels[:, :, 0].to("cpu").numpy()
-            arousal_pred = output[:, :, 1].to("cpu").numpy()
-            arousal_label = labels[:, :, 1].to("cpu").numpy()
+            valence_pred = output[:, 0].to("cpu").numpy()
+            valence_label = labels[:, 0].to("cpu").numpy()
+            arousal_pred = output[:, 1].to("cpu").numpy()
+            arousal_label = labels[:, 1].to("cpu").numpy()
             if metric == "ccc":
                 valence_score = ccc_score(valence_pred, valence_label)
                 arousal_score = ccc_score(arousal_pred, arousal_label)

@@ -1,0 +1,50 @@
+[2021-06-14 00:48:52,237][__main__][INFO] - Sequence length: 80
+[2021-06-14 00:48:52,238][__main__][INFO] - Device: 0
+[2021-06-14 00:48:52,238][__main__][INFO] - Batch size: 128
+[2021-06-14 00:49:09,237][__main__][INFO] - Criterion is set to mse
+[2021-06-14 00:49:09,237][__main__][INFO] - Start training...
+[2021-06-14 00:56:12,642][__main__][INFO] - Current learning rate: 0.001
+[2021-06-14 00:56:12,642][__main__][INFO] - Epoch 1 - Avg_train_loss: 0.1005 time: 423s
+[2021-06-14 00:56:12,642][__main__][INFO] - Epoch: 1 - Val_valence: 0.2377 - Val_arousal: 0.0769
+[2021-06-14 01:03:17,044][__main__][INFO] - Current learning rate: 0.001
+[2021-06-14 01:03:17,044][__main__][INFO] - Epoch 2 - Avg_train_loss: 0.0827 time: 424s
+[2021-06-14 01:03:17,044][__main__][INFO] - Epoch: 2 - Val_valence: 0.2039 - Val_arousal: 0.0803
+[2021-06-14 01:10:21,456][__main__][INFO] - Current learning rate: 0.001
+[2021-06-14 01:10:21,456][__main__][INFO] - Epoch 3 - Avg_train_loss: 0.0733 time: 424s
+[2021-06-14 01:10:21,456][__main__][INFO] - Epoch: 3 - Val_valence: 0.2792 - Val_arousal: 0.0702
+[2021-06-14 01:17:25,739][__main__][INFO] - Current learning rate: 0.001
+[2021-06-14 01:17:25,739][__main__][INFO] - Epoch 4 - Avg_train_loss: 0.0717 time: 424s
+[2021-06-14 01:17:25,739][__main__][INFO] - Epoch: 4 - Val_valence: 0.2457 - Val_arousal: 0.0746
+[2021-06-14 01:24:30,204][__main__][INFO] - Current learning rate: 0.001
+[2021-06-14 01:24:30,204][__main__][INFO] - Epoch 5 - Avg_train_loss: 0.0663 time: 424s
+[2021-06-14 01:24:30,204][__main__][INFO] - Epoch: 5 - Val_valence: 0.2223 - Val_arousal: 0.0735
+[2021-06-14 01:31:34,885][__main__][INFO] - Current learning rate: 0.001
+[2021-06-14 01:31:34,885][__main__][INFO] - Epoch 6 - Avg_train_loss: 0.0646 time: 425s
+[2021-06-14 01:31:34,885][__main__][INFO] - Epoch: 6 - Val_valence: 0.2438 - Val_arousal: 0.0726
+[2021-06-14 01:38:39,542][__main__][INFO] - Current learning rate: 0.001
+[2021-06-14 01:38:39,543][__main__][INFO] - Epoch 7 - Avg_train_loss: 0.0611 time: 425s
+[2021-06-14 01:38:39,543][__main__][INFO] - Epoch: 7 - Val_valence: 0.2619 - Val_arousal: 0.0759
+[2021-06-14 01:45:44,157][__main__][INFO] - Current learning rate: 0.001
+[2021-06-14 01:45:44,157][__main__][INFO] - Epoch 8 - Avg_train_loss: 0.0562 time: 424s
+[2021-06-14 01:45:44,157][__main__][INFO] - Epoch: 8 - Val_valence: 0.2476 - Val_arousal: 0.0697
+[2021-06-14 01:52:48,745][__main__][INFO] - Current learning rate: 0.001
+[2021-06-14 01:52:48,745][__main__][INFO] - Epoch 9 - Avg_train_loss: 0.0535 time: 424s
+[2021-06-14 01:52:48,745][__main__][INFO] - Epoch: 9 - Val_valence: 0.2398 - Val_arousal: 0.0709
+[2021-06-14 01:59:53,402][__main__][INFO] - Current learning rate: 0.001
+[2021-06-14 01:59:53,402][__main__][INFO] - Epoch 10 - Avg_train_loss: 0.0510 time: 425s
+[2021-06-14 01:59:53,402][__main__][INFO] - Epoch: 10 - Val_valence: 0.2455 - Val_arousal: 0.0777
+[2021-06-14 02:06:57,895][__main__][INFO] - Current learning rate: 0.001
+[2021-06-14 02:06:57,895][__main__][INFO] - Epoch 11 - Avg_train_loss: 0.0502 time: 424s
+[2021-06-14 02:06:57,895][__main__][INFO] - Epoch: 11 - Val_valence: 0.2436 - Val_arousal: 0.0678
+[2021-06-14 02:14:02,636][__main__][INFO] - Current learning rate: 0.001
+[2021-06-14 02:14:02,636][__main__][INFO] - Epoch 12 - Avg_train_loss: 0.0483 time: 425s
+[2021-06-14 02:14:02,636][__main__][INFO] - Epoch: 12 - Val_valence: 0.2354 - Val_arousal: 0.0756
+[2021-06-14 02:21:07,250][__main__][INFO] - Current learning rate: 0.001
+[2021-06-14 02:21:07,250][__main__][INFO] - Epoch 13 - Avg_train_loss: 0.0465 time: 424s
+[2021-06-14 02:21:07,250][__main__][INFO] - Epoch: 13 - Val_valence: 0.2294 - Val_arousal: 0.0750
+[2021-06-14 02:28:11,782][__main__][INFO] - Current learning rate: 0.001
+[2021-06-14 02:28:11,783][__main__][INFO] - Epoch 14 - Avg_train_loss: 0.0451 time: 424s
+[2021-06-14 02:28:11,783][__main__][INFO] - Epoch: 14 - Val_valence: 0.2522 - Val_arousal: 0.0770
+[2021-06-14 02:35:16,360][__main__][INFO] - Current learning rate: 0.001
+[2021-06-14 02:35:16,360][__main__][INFO] - Epoch 15 - Avg_train_loss: 0.0425 time: 424s
+[2021-06-14 02:35:16,360][__main__][INFO] - Epoch: 15 - Val_valence: 0.2488 - Val_arousal: 0.0830
