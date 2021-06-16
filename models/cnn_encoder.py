@@ -1,11 +1,11 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from torchvision import models
 
 
-# 2D CNN encoder using ResNet-152 pretrained
 class CNNEncoder(nn.Module):
+    """Encoder based on CNN."""
+
     def __init__(self, fc_hidden1=1500, drop_p=0.5, pretrain=False):
         """Load the pretrained ResNet and replace top fc layer."""
         super().__init__()
