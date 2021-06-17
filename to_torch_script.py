@@ -39,7 +39,7 @@ def convert_decoder(model, model_path, model_path_updated, device):
         model.load_state_dict(chk["model"], strict=False)
         print("State dict has been loaded!")
 
-    sample_input = torch.rand(8, 4, 300)
+    sample_input = torch.rand(8, 4, 1500)
     model.to(device)
     model.eval()
     sample_input = sample_input.to(device)
@@ -57,25 +57,22 @@ def main(cfg):
     encoder_path = hydra.utils.to_absolute_path(cfg.encoder_params.chk)
     encoder_output = hydra.utils.to_absolute_path(cfg.encoder_params.torch_script_path)
     fc_hidden1 = cfg.encoder_params.fc_hidden1
-    fc_hidden2 = cfg.encoder_params.fc_hidden2
     cnn_drop_out = cfg.encoder_params.drop_out
-    embedding_dim = cfg.encoder_params.embedding_dim
 
     cnn_encoder = CNNEncoder(
         fc_hidden1=fc_hidden1,
-        fc_hidden2=fc_hidden2,
         drop_p=cnn_drop_out,
-        cnn_embed_dim=embedding_dim,
         pretrain=False,
     ).to(device)
 
     print("Converting encoder to script format...")
-    convert_encoder(cnn_encoder, encoder_path, encoder_output, 96, device)
+    convert_encoder(cnn_encoder, encoder_path, encoder_output, 224, device)
     print("Encoder has been converted!")
 
     # Decoder params
     decoder_path = hydra.utils.to_absolute_path(cfg.decoder_params.chk)
     decoder_output = hydra.utils.to_absolute_path(cfg.decoder_params.torch_script_path)
+    print("Decoder: ", decoder_output)
     h_rnn_layers = cfg.decoder_params.h_rnn_layers  # Number of hidden layers
     h_rnn_nodes = cfg.decoder_params.rnn_nodes  # Number of nodes in the hidden layers
     fc_dim = cfg.decoder_params.fc_dim
@@ -84,7 +81,7 @@ def main(cfg):
 
     # Define RNN decoder
     rnn_decoder = RNNDecoder(
-        cnn_embed_dim=embedding_dim,
+        cnn_embed_dim=fc_hidden1,
         h_rnn_layers=h_rnn_layers,
         h_rnn=h_rnn_nodes,
         h_fc_dim=fc_dim,
