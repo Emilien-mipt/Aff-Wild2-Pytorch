@@ -126,7 +126,8 @@ def run_trainer(cfg):
             drop_p=cnn_drop_out,
             pretrain=False,
         ).to(device)
-        load_model(cnn_encoder, cfg.encoder_params.chk)
+        path_to_encoder = hydra.utils.to_absolute_path(cfg.encoder_params.chk)
+        load_model(cnn_encoder, path_to_encoder)
     else:
         cnn_encoder = CNNEncoder(
             fc_hidden1=fc_hidden1,
@@ -144,7 +145,8 @@ def run_trainer(cfg):
         num_outputs=num_outputs,
     ).to(device)
     if cfg.decoder_params.chk:
-        load_model(rnn_decoder, cfg.decoder_params.chk)
+        path_to_decoder = hydra.utils.to_absolute_path(cfg.decoder_params.chk)
+        load_model(rnn_decoder, path_to_decoder)
 
     # Combine all EncoderCNN + DecoderRNN parameters
     crnn_params = list(cnn_encoder.parameters()) + list(rnn_decoder.parameters())
