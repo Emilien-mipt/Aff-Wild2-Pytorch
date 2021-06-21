@@ -84,15 +84,3 @@ class ChunkCreator:
     def print_size(self):
         print(f"Total number of chunks : {len(self.result_image_paths)}")
         print(f"Total number of processed frames: {len(self.result_image_paths)*self.seq_len}")
-
-
-# TEST
-data_path = "data/dataset/Train_processed"
-label_path = "data/annotations_VA/Train_Set"
-
-# data_path = "data/dataset/Val_processed"
-# label_path = "data/annotations_VA/Validation_Set"
-
-test_preparator = ChunkCreator(path_data=data_path, path_label=label_path, seq_len=80)
-test_preparator.form_result_list()
-test_preparator.print_size()
