@@ -62,6 +62,7 @@ def run_trainer(cfg):
     # Mean and std from ImageNet
     mean = np.array(cfg.dataset.mean)
     std = np.array(cfg.dataset.std)
+    size = cfg.dataset.size
 
     # Create train dataset and dataloader
     train_data_chunks = ChunkCreator(path_data=train_data_path, path_label=train_label_path, seq_len=seq_len)
@@ -77,7 +78,7 @@ def run_trainer(cfg):
     train_dataset = AffWildDataset(
         image_paths_list=train_image_paths,
         labels_list=train_labels,
-        transform=get_transforms(mode="train", mean=mean, std=std),
+        transform=get_transforms(mode="train", size=size, mean=mean, std=std),
     )
     train_loader = DataLoader(
         train_dataset,
@@ -96,7 +97,7 @@ def run_trainer(cfg):
     val_dataset = AffWildDataset(
         image_paths_list=val_image_paths,
         labels_list=val_labels,
-        transform=get_transforms(mode="valid", mean=mean, std=std),
+        transform=get_transforms(mode="valid", size=size, mean=mean, std=std),
     )
     val_loader = DataLoader(
         val_dataset,
