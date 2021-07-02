@@ -72,8 +72,8 @@ def run_trainer(cfg):
 
     if cfg.train_params.debug:
         logger.info("Apply debug mode")
-        train_image_paths = train_image_paths[:1000]
-        train_labels = train_labels[:1000]
+        train_image_paths = train_image_paths[:100]
+        train_labels = train_labels[:100]
 
     train_dataset = AffWildDataset(
         image_paths_list=train_image_paths,
@@ -156,7 +156,8 @@ def run_trainer(cfg):
 
     # Choose criterion
     if cfg.train_params.criterion == "ccc":
-        criterion = CCCLoss()
+        ccc_eps = cfg.train_params.ccc_eps
+        criterion = CCCLoss(device=device, eps=ccc_eps)
         metric = "ccc"
     elif cfg.train_params.criterion == "mse":
         criterion = nn.MSELoss()
@@ -175,7 +176,7 @@ def run_trainer(cfg):
         start_time = time.time()
         avg_train_loss = train_one_epoch(epoch, model, device, train_loader, criterion, optimizer)
         print("Validating...")
-        avg_val_valence, avg_val_arousal = val_one_epoch(val_loader, model, metric, device)
+        avg_val_valence, avg_val_arousal = val_one_epoch(val_loader, model, metric, ccc_eps, device)
         elapsed = time.time() - start_time
 
         cur_lr = optimizer.param_groups[0]["lr"]

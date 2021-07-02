@@ -13,6 +13,7 @@ train_params:
   batch_size: 128
   n_epochs: 15
   criterion: ccc
+  ccc_eps: 1e-5
   num_workers: 8
 
 encoder_params:
