@@ -1,0 +1,5 @@
+- dataset.size=224
+- train_params.n_epochs=50
+- train_params.batch_size=32
+- train_params.num_workers=2
+- optimizer.lr=1e-4

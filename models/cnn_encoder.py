@@ -13,10 +13,10 @@ class CNNEncoder(nn.Module):
         self.fc_hidden1 = fc_hidden1
         self.drop_p = drop_p
 
-        resnet = models.resnet50(pretrained=pretrain)
-        modules = list(resnet.children())[:-1]  # delete the last fc layer.
-        self.resnet = nn.Sequential(*modules)
-        self.fc1 = nn.Linear(resnet.fc.in_features, fc_hidden1)
+        densenet = models.densenet121(pretrained=True)
+        modules = list(densenet.children())[:-1]  # delete the last fc layer.
+        self.densenet = nn.Sequential(*modules)
+        self.fc1 = nn.Linear(50176, fc_hidden1)
         self.act1 = nn.ReLU()
         self.dropout = nn.Dropout(p=self.drop_p)
 
@@ -24,8 +24,10 @@ class CNNEncoder(nn.Module):
         cnn_embed_seq = []
         for t in range(x_3d.size(1)):
             # ResNet CNN
-            x = self.resnet(x_3d[:, t, :, :, :])  # ResNet
-            x = x.view(x.size(0), -1)  # flatten output of conv
+            with torch.no_grad():
+                x = self.densenet(x_3d[:, t, :, :, :])  # DenseNet
+                x = x.view(x.size(0), -1)  # flatten output of conv
+                # print("TEST: ", x.shape)
 
             # FC layers
             x = self.fc1(x)
