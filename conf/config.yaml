@@ -21,6 +21,7 @@ encoder_params:
   fc_hidden1: 1500
   drop_out: 0.5
   torch_script_path: ""
+  freeze: True
 
 decoder_params:
   chk: ""

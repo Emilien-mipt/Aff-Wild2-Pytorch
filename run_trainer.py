@@ -111,6 +111,7 @@ def run_trainer(cfg):
     # Encoder params
     fc_hidden1 = cfg.encoder_params.fc_hidden1
     cnn_drop_out = cfg.encoder_params.drop_out
+    freeze_backbone = cfg.encoder_params.freeze
 
     # Decoder params
     h_rnn_layers = cfg.decoder_params.h_rnn_layers  # Number of hidden layers
@@ -123,18 +124,14 @@ def run_trainer(cfg):
     # Define CNN encoder
     if cfg.encoder_params.chk:
         cnn_encoder = CNNEncoder(
-            fc_hidden1=fc_hidden1,
-            drop_p=cnn_drop_out,
-            pretrain=False,
+            fc_hidden1=fc_hidden1, drop_p=cnn_drop_out, pretrain=False, freeze=freeze_backbone
         ).to(device)
         path_to_encoder = hydra.utils.to_absolute_path(cfg.encoder_params.chk)
         load_model(cnn_encoder, path_to_encoder)
     else:
-        cnn_encoder = CNNEncoder(
-            fc_hidden1=fc_hidden1,
-            drop_p=cnn_drop_out,
-            pretrain=True,
-        ).to(device)
+        cnn_encoder = CNNEncoder(fc_hidden1=fc_hidden1, drop_p=cnn_drop_out, pretrain=True, freeze=freeze_backbone).to(
+            device
+        )
 
     # Define RNN decoder
     rnn_decoder = RNNDecoder(

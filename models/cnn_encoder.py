@@ -6,25 +6,31 @@ from torchvision import models
 class CNNEncoder(nn.Module):
     """Encoder based on CNN."""
 
-    def __init__(self, fc_hidden1=1500, drop_p=0.5, pretrain=False):
+    def __init__(self, fc_hidden1=1500, drop_p=0.5, pretrain=False, freeze=True):
         """Load the pretrained ResNet and replace top fc layer."""
         super().__init__()
 
         self.fc_hidden1 = fc_hidden1
         self.drop_p = drop_p
 
-        densenet = models.densenet121(pretrained=True)
+        densenet = models.densenet121(pretrained=pretrain)
         modules = list(densenet.children())[:-1]  # delete the last fc layer.
         self.densenet = nn.Sequential(*modules)
         self.fc1 = nn.Linear(50176, fc_hidden1)
         self.act1 = nn.ReLU()
         self.dropout = nn.Dropout(p=self.drop_p)
+        self.freeze = freeze
 
     def forward(self, x_3d):
         cnn_embed_seq = []
         for t in range(x_3d.size(1)):
             # ResNet CNN
-            with torch.no_grad():
+            if self.freeze:
+                with torch.no_grad():
+                    x = self.densenet(x_3d[:, t, :, :, :])  # DenseNet
+                    x = x.view(x.size(0), -1)  # flatten output of conv
+                    # print("TEST: ", x.shape)
+            else:
                 x = self.densenet(x_3d[:, t, :, :, :])  # DenseNet
                 x = x.view(x.size(0), -1)  # flatten output of conv
                 # print("TEST: ", x.shape)
