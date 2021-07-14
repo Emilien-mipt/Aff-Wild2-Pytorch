@@ -13,7 +13,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 from dataset import AffWildDataset
 from loss import CCCLoss
-from models.cnn_encoder import CNNEncoder
+from models.cnn_encoder import Resnet_Encoder, VGG_Encoder
 from models.rnn_decoder import RNNDecoder
 from train import train_one_epoch, val_one_epoch
 from transforms import get_transforms
@@ -123,15 +123,15 @@ def run_trainer(cfg):
     # Create model
     # Define CNN encoder
     if cfg.encoder_params.chk:
-        cnn_encoder = CNNEncoder(
+        cnn_encoder = VGG_Encoder(
             fc_hidden1=fc_hidden1, drop_p=cnn_drop_out, pretrain=False, freeze=freeze_backbone
         ).to(device)
         path_to_encoder = hydra.utils.to_absolute_path(cfg.encoder_params.chk)
         load_model(cnn_encoder, path_to_encoder)
     else:
-        cnn_encoder = CNNEncoder(fc_hidden1=fc_hidden1, drop_p=cnn_drop_out, pretrain=True, freeze=freeze_backbone).to(
-            device
-        )
+        cnn_encoder = VGG_Encoder(
+            fc_hidden1=fc_hidden1, drop_p=cnn_drop_out, pretrain=True, freeze=freeze_backbone
+        ).to(device)
 
     # Define RNN decoder
     rnn_decoder = RNNDecoder(

@@ -13,4 +13,5 @@ __pycache__/
 # weights
 weights/
 *.pt
+*.pth
 *.pkl
