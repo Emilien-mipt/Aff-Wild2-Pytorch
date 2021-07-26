@@ -60,7 +60,7 @@ def train_one_epoch(epoch, model, device, train_loader, criterion, optimizer):
     return losses.avg
 
 
-def val_one_epoch(valid_loader, model, metric, device):
+def val_one_epoch(valid_loader, model, metric, ccc_eps, device):
     batch_time = AverageMeter()
     data_time = AverageMeter()
     valence = AverageMeter()
@@ -86,8 +86,8 @@ def val_one_epoch(valid_loader, model, metric, device):
             arousal_pred = output[:, :, 1].to("cpu").numpy()
             arousal_label = labels[:, :, 1].to("cpu").numpy()
             if metric == "ccc":
-                valence_score = ccc_score(valence_pred, valence_label)
-                arousal_score = ccc_score(arousal_pred, arousal_label)
+                valence_score = ccc_score(valence_pred, valence_label, eps=ccc_eps)
+                arousal_score = ccc_score(arousal_pred, arousal_label, eps=ccc_eps)
             elif metric == "mse":
                 valence_score = mse_score(valence_pred, valence_label)
                 arousal_score = mse_score(arousal_pred, arousal_label)

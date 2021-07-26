@@ -1,0 +1,6 @@
+- dataset.size=224
+- train_params.num_workers=0
+- train_params.batch_size=32
+- optimizer.lr=1e-4
+- encoder_params.chk=./models/vggface.pth
+- encoder_params.fc_hidden1=4096

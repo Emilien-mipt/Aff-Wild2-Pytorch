@@ -8,12 +8,13 @@ import torch
 import torch.nn as nn
 from omegaconf import DictConfig
 from torch.optim import Adam
+from torch.optim.lr_scheduler import ExponentialLR
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 
 from dataset import AffWildDataset
 from loss import CCCLoss
-from models.cnn_encoder import CNNEncoder
+from models.cnn_encoder import Resnet_Encoder, VGG_Encoder
 from models.rnn_decoder import RNNDecoder
 from train import train_one_epoch, val_one_epoch
 from transforms import get_transforms
@@ -62,6 +63,9 @@ def run_trainer(cfg):
     # Mean and std from ImageNet
     mean = np.array(cfg.dataset.mean)
     std = np.array(cfg.dataset.std)
+    # Input size
+    size = cfg.dataset.size
+    logger.info(f"Input size: {size}")
 
     # Create train dataset and dataloader
     train_data_chunks = ChunkCreator(path_data=train_data_path, path_label=train_label_path, seq_len=seq_len)
@@ -71,13 +75,13 @@ def run_trainer(cfg):
 
     if cfg.train_params.debug:
         logger.info("Apply debug mode")
-        train_image_paths = train_image_paths[:1000]
-        train_labels = train_labels[:1000]
+        train_image_paths = train_image_paths[:100]
+        train_labels = train_labels[:100]
 
     train_dataset = AffWildDataset(
         image_paths_list=train_image_paths,
         labels_list=train_labels,
-        transform=get_transforms(mode="train", mean=mean, std=std),
+        transform=get_transforms(mode="train", size=size, mean=mean, std=std),
     )
     train_loader = DataLoader(
         train_dataset,
@@ -96,7 +100,7 @@ def run_trainer(cfg):
     val_dataset = AffWildDataset(
         image_paths_list=val_image_paths,
         labels_list=val_labels,
-        transform=get_transforms(mode="valid", mean=mean, std=std),
+        transform=get_transforms(mode="valid", size=size, mean=mean, std=std),
     )
     val_loader = DataLoader(
         val_dataset,
@@ -109,9 +113,8 @@ def run_trainer(cfg):
     # Model params
     # Encoder params
     fc_hidden1 = cfg.encoder_params.fc_hidden1
-    fc_hidden2 = cfg.encoder_params.fc_hidden2
     cnn_drop_out = cfg.encoder_params.drop_out
-    embedding_dim = cfg.encoder_params.embedding_dim
+    freeze_backbone = cfg.encoder_params.freeze
 
     # Decoder params
     h_rnn_layers = cfg.decoder_params.h_rnn_layers  # Number of hidden layers
@@ -123,26 +126,19 @@ def run_trainer(cfg):
     # Create model
     # Define CNN encoder
     if cfg.encoder_params.chk:
-        cnn_encoder = CNNEncoder(
-            fc_hidden1=fc_hidden1,
-            fc_hidden2=fc_hidden2,
-            drop_p=cnn_drop_out,
-            cnn_embed_dim=embedding_dim,
-            pretrain=False,
+        cnn_encoder = VGG_Encoder(
+            fc_hidden1=fc_hidden1, drop_p=cnn_drop_out, pretrain=False, freeze=freeze_backbone
         ).to(device)
-        load_model(cnn_encoder, cfg.encoder_params.chk)
+        path_to_encoder = hydra.utils.to_absolute_path(cfg.encoder_params.chk)
+        load_model(cnn_encoder, path_to_encoder)
     else:
-        cnn_encoder = CNNEncoder(
-            fc_hidden1=fc_hidden1,
-            fc_hidden2=fc_hidden2,
-            drop_p=cnn_drop_out,
-            cnn_embed_dim=embedding_dim,
-            pretrain=True,
+        cnn_encoder = VGG_Encoder(
+            fc_hidden1=fc_hidden1, drop_p=cnn_drop_out, pretrain=True, freeze=freeze_backbone
         ).to(device)
 
     # Define RNN decoder
     rnn_decoder = RNNDecoder(
-        cnn_embed_dim=embedding_dim,
+        cnn_embed_dim=fc_hidden1,
         h_rnn_layers=h_rnn_layers,
         h_rnn=h_rnn_nodes,
         h_fc_dim=fc_dim,
@@ -150,7 +146,8 @@ def run_trainer(cfg):
         num_outputs=num_outputs,
     ).to(device)
     if cfg.decoder_params.chk:
-        load_model(rnn_decoder, cfg.decoder_params.chk)
+        path_to_decoder = hydra.utils.to_absolute_path(cfg.decoder_params.chk)
+        load_model(rnn_decoder, path_to_decoder)
 
     # Combine all EncoderCNN + DecoderRNN parameters
     crnn_params = list(cnn_encoder.parameters()) + list(rnn_decoder.parameters())
@@ -159,7 +156,8 @@ def run_trainer(cfg):
 
     # Choose criterion
     if cfg.train_params.criterion == "ccc":
-        criterion = CCCLoss()
+        ccc_eps = cfg.train_params.ccc_eps
+        criterion = CCCLoss(device=device, eps=ccc_eps)
         metric = "ccc"
     elif cfg.train_params.criterion == "mse":
         criterion = nn.MSELoss()
@@ -172,18 +170,22 @@ def run_trainer(cfg):
     # Choose optimizer
     optimizer = Adam(params=crnn_params, lr=cfg.optimizer.lr)
 
+    # Set scheduler
+    scheduler = ExponentialLR(optimizer, gamma=0.9)
+
     # start training
     logger.info("Start training...")
     for epoch in range(cfg.train_params.n_epochs):
         start_time = time.time()
         avg_train_loss = train_one_epoch(epoch, model, device, train_loader, criterion, optimizer)
         print("Validating...")
-        avg_val_valence, avg_val_arousal = val_one_epoch(val_loader, model, metric, device)
+        avg_val_valence, avg_val_arousal = val_one_epoch(val_loader, model, metric, ccc_eps, device)
         elapsed = time.time() - start_time
 
         cur_lr = optimizer.param_groups[0]["lr"]
-
         logger.info(f"Current learning rate: {cur_lr}")
+        # Scheduler step
+        scheduler.step()
 
         tb.add_scalar("Learning rate", cur_lr, epoch + 1)
         tb.add_scalar("Train Loss", avg_train_loss, epoch + 1)

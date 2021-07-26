@@ -89,7 +89,7 @@ def load_model(model, path_to_model):
         train_loss,
         "\nVal valence:",
         valence,
-        "\nMetrics:",
+        "\nVal arousal:",
         arousal,
     )
     return cp
