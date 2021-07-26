@@ -1,0 +1,38 @@
+dataset:
+  data_path: ./data/dataset_96x96/
+  VA_label_path: ./data/annotations_VA/
+  seq_len: 80
+  mean:
+  - 0.367035294117647
+  - 0.41083294117647057
+  - 0.5066129411764705
+  std:
+  - 1
+  - 1
+  - 1
+  size: 224
+train_params:
+  debug: false
+  seed: 2021
+  gpu_id: 0
+  batch_size: 32
+  n_epochs: 20
+  criterion: ccc
+  ccc_eps: 1.0e-05
+  num_workers: 0
+encoder_params:
+  chk: ''
+  fc_hidden1: 4096
+  drop_out: 0.5
+  torch_script_path: ''
+  freeze: true
+decoder_params:
+  chk: ''
+  h_rnn_layers: 2
+  rnn_nodes: 128
+  fc_dim: 32
+  drop_out: 0.5
+  num_outputs: 2
+  torch_script_path: ''
+optimizer:
+  lr: 0.001

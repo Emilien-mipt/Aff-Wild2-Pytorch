@@ -8,6 +8,7 @@ import torch
 import torch.nn as nn
 from omegaconf import DictConfig
 from torch.optim import Adam
+from torch.optim.lr_scheduler import ExponentialLR
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 
@@ -62,7 +63,9 @@ def run_trainer(cfg):
     # Mean and std from ImageNet
     mean = np.array(cfg.dataset.mean)
     std = np.array(cfg.dataset.std)
+    # Input size
     size = cfg.dataset.size
+    logger.info(f"Input size: {size}")
 
     # Create train dataset and dataloader
     train_data_chunks = ChunkCreator(path_data=train_data_path, path_label=train_label_path, seq_len=seq_len)
@@ -167,6 +170,9 @@ def run_trainer(cfg):
     # Choose optimizer
     optimizer = Adam(params=crnn_params, lr=cfg.optimizer.lr)
 
+    # Set scheduler
+    scheduler = ExponentialLR(optimizer, gamma=0.9)
+
     # start training
     logger.info("Start training...")
     for epoch in range(cfg.train_params.n_epochs):
@@ -177,8 +183,9 @@ def run_trainer(cfg):
         elapsed = time.time() - start_time
 
         cur_lr = optimizer.param_groups[0]["lr"]
-
         logger.info(f"Current learning rate: {cur_lr}")
+        # Scheduler step
+        scheduler.step()
 
         tb.add_scalar("Learning rate", cur_lr, epoch + 1)
         tb.add_scalar("Train Loss", avg_train_loss, epoch + 1)
