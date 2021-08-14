@@ -20,7 +20,7 @@ def train_one_epoch(epoch, model, device, train_loader, criterion, optimizer):
     start = end = time.time()
 
     # Iterate over dataloader
-    for batch_idx, (images, labels) in enumerate(tqdm(train_loader)):
+    for batch_idx, (images, labels, landmarks) in enumerate(tqdm(train_loader)):
         # measure data loading time
         data_time.update(time.time() - end)
         # zero the gradients
@@ -70,7 +70,7 @@ def val_one_epoch(valid_loader, model, metric, ccc_eps, device):
     cnn_encoder.eval()
     rnn_decoder.eval()
     start = end = time.time()
-    for step, (images, labels) in enumerate(tqdm(valid_loader)):
+    for step, (images, labels, landmarks) in enumerate(tqdm(valid_loader)):
         # measure data loading time
         data_time.update(time.time() - end)
         images = images.to(device)

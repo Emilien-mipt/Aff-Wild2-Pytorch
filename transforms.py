@@ -14,7 +14,7 @@ STD = [0.229, 0.224, 0.225]  # ImageNet values
 # ====================================================
 # Transforms
 # ====================================================
-def get_transforms(mode, size, mean, std):
+def get_transforms(mode, mean, std, size):
 
     if mode == "train":
         return Compose(

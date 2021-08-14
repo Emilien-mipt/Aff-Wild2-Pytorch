@@ -60,18 +60,21 @@ def run_trainer(cfg):
     batch_size = cfg.train_params.batch_size
     logger.info(f"Batch size: {batch_size}")
     num_workers = cfg.train_params.num_workers
-    # Mean and std from ImageNet
-    mean = np.array(cfg.dataset.mean)
-    std = np.array(cfg.dataset.std)
+
+    # Dataset params
     # Input size
     size = cfg.dataset.size
     logger.info(f"Input size: {size}")
+    # Mean and std of the dataset
+    mean = np.array(cfg.dataset.mean)
+    std = np.array(cfg.dataset.std)
 
     # Create train dataset and dataloader
     train_data_chunks = ChunkCreator(path_data=train_data_path, path_label=train_label_path, seq_len=seq_len)
     train_data_chunks.form_result_list()
     train_image_paths = train_data_chunks.result_image_paths
     train_labels = train_data_chunks.result_labels
+    train_landmarks = train_data_chunks.result_landmarks
 
     if cfg.train_params.debug:
         logger.info("Apply debug mode")
@@ -81,8 +84,17 @@ def run_trainer(cfg):
     train_dataset = AffWildDataset(
         image_paths_list=train_image_paths,
         labels_list=train_labels,
-        transform=get_transforms(mode="train", size=size, mean=mean, std=std),
+        landmarks_list=train_landmarks,
+        transform=get_transforms(mode="train", mean=mean, std=std, size=size),
     )
+
+    # Prints
+    print("Train part: ")
+    train_data_chunks.print_size()
+    print(train_dataset[5][0].shape)
+    print(train_dataset[5][1].shape)
+    print(train_dataset[5][2].shape)
+
     train_loader = DataLoader(
         train_dataset,
         batch_size=batch_size,
@@ -96,12 +108,21 @@ def run_trainer(cfg):
     val_data_chunks.form_result_list()
     val_image_paths = val_data_chunks.result_image_paths
     val_labels = val_data_chunks.result_labels
+    val_landmarks = val_data_chunks.result_landmarks
 
     val_dataset = AffWildDataset(
         image_paths_list=val_image_paths,
         labels_list=val_labels,
-        transform=get_transforms(mode="valid", size=size, mean=mean, std=std),
+        landmarks_list=val_landmarks,
+        transform=get_transforms(mode="valid", mean=mean, std=std, size=size),
     )
+    print("Val part: ")
+    val_data_chunks.print_size()
+
+    print(val_dataset[5][0].shape)
+    print(val_dataset[5][1].shape)
+    print(val_dataset[5][2].shape)
+
     val_loader = DataLoader(
         val_dataset,
         batch_size=batch_size,
@@ -171,7 +192,8 @@ def run_trainer(cfg):
     optimizer = Adam(params=crnn_params, lr=cfg.optimizer.lr)
 
     # Set scheduler
-    scheduler = ExponentialLR(optimizer, gamma=0.9)
+    gamma = cfg.scheduler.gamma
+    scheduler = ExponentialLR(optimizer, gamma=gamma)
 
     # start training
     logger.info("Start training...")
@@ -180,6 +202,7 @@ def run_trainer(cfg):
         avg_train_loss = train_one_epoch(epoch, model, device, train_loader, criterion, optimizer)
         print("Validating...")
         avg_val_valence, avg_val_arousal = val_one_epoch(val_loader, model, metric, ccc_eps, device)
+        scheduler.step()
         elapsed = time.time() - start_time
 
         cur_lr = optimizer.param_groups[0]["lr"]
