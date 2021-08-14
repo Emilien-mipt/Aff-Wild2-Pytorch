@@ -4,10 +4,11 @@ from torch.utils.data import Dataset
 
 
 class AffWildDataset(Dataset):
-    def __init__(self, image_paths_list, labels_list, transform=None):
+    def __init__(self, image_paths_list, labels_list, landmarks_list, transform=None):
         self.transform = transform
         self.image_paths_list = image_paths_list
         self.labels_list = labels_list
+        self.landmarks_list = landmarks_list
 
     def __len__(self):
         return len(self.image_paths_list)
@@ -15,6 +16,7 @@ class AffWildDataset(Dataset):
     def __getitem__(self, idx):
         chunk_image = self.image_paths_list[idx]
         chunk_label = self.labels_list[idx]
+        chunk_landmark = self.landmarks_list[idx]
         image_list = []
         # Read images
         for image_path in chunk_image:
@@ -27,8 +29,10 @@ class AffWildDataset(Dataset):
             image_list.append(image)
 
         label_list = [torch.tensor(label).float() for label in chunk_label]
+        landmark_list = [torch.tensor(landmark).float() for landmark in chunk_landmark]
 
         image_array = torch.stack(image_list, dim=0)
         label_array = torch.stack(label_list, dim=0)
+        landmark_array = torch.stack(landmark_list, dim=0)
 
-        return image_array, label_array
+        return image_array, label_array, landmark_array
