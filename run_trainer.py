@@ -198,15 +198,16 @@ def run_trainer(cfg):
     # start training
     logger.info("Start training...")
     for epoch in range(cfg.train_params.n_epochs):
+        # Current learning rate
+        cur_lr = optimizer.param_groups[0]["lr"]
+        logger.info(f"Current learning rate: {cur_lr}")
+
         start_time = time.time()
         avg_train_loss = train_one_epoch(epoch, model, device, train_loader, criterion, optimizer)
         print("Validating...")
         avg_val_valence, avg_val_arousal = val_one_epoch(val_loader, model, metric, ccc_eps, device)
-        scheduler.step()
         elapsed = time.time() - start_time
 
-        cur_lr = optimizer.param_groups[0]["lr"]
-        logger.info(f"Current learning rate: {cur_lr}")
         # Scheduler step
         scheduler.step()
 
