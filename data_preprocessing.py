@@ -12,6 +12,8 @@ import os
 import time
 
 import cv2
+import face_alignment
+import numpy as np
 import pandas
 import torch
 from facenet_pytorch import MTCNN
@@ -32,6 +34,24 @@ gpu_id = args.gpu_id
 device = torch.device(f"cuda:{gpu_id}" if torch.cuda.is_available() else "cpu")
 
 detector = MTCNN(select_largest=False, device=device)
+# Landmark extractor
+fa = face_alignment.FaceAlignment(face_alignment.LandmarksType._2D, device="cpu", face_detector="sfd")
+
+
+# Landmark detection
+def landmarks_68_face_extractor(image):
+    try:
+        dets = fa.get_landmarks_from_image(image)
+        try:
+            if len(dets) > 0:
+                return dets[0], True
+
+        except TypeError:
+            return None, False
+    except ValueError:
+        return None, False
+    except RuntimeError:
+        return None, False
 
 
 def video_reader(input_dir, output_dir):
@@ -100,7 +120,7 @@ def crop_face(image, rotate=True, quiet_mode=True):
         alpha = eye_width
     else:
         alpha = em_height
-    g_beta = 2.0
+    g_beta = 2.5
     g_left = fcx - alpha / 2.0 * g_beta
     g_upper = fcy - alpha / 2.0 * g_beta
     g_right = fcx + alpha / 2.0 * g_beta
@@ -216,8 +236,23 @@ def parse_video_frames():
     video_index = 0
     total_frames = 0
     failed_frames = 0
+    wrong_frames = 0  # without 68 landmarks
+
     for video_input_file, video_output_dir in zip(video_input_paths, video_output_dirs):
         video_index += 1
+
+        last_frame = None
+        last_keypoints = {
+            "frame": 0,
+            "detect": 0,
+            "landmarks_68": [[0, 0] for i in range(68)],
+            "nose": (0, 0),
+            "mouth_right": (0, 0),
+            "right_eye": (0, 0),
+            "left_eye": (0, 0),
+            "mouth_left": (0, 0),
+        }
+
         df = pandas.DataFrame()
         print(f"Processing {video_index}/{length}\n ...")
         if os.path.isfile(video_input_file):
@@ -235,27 +270,51 @@ def parse_video_frames():
                 index += 1
                 if ret:
                     face_img, keypoints = crop_face(frame, rotate=alignment, quiet_mode=quiet_mode)
-                    if keypoints is None:
+
+                    landmarks_68, is_face = landmarks_68_face_extractor(np.array(face_img))
+                    last_keypoints["frame"] = index
+                    if face_img is not None:
+                        if is_face:
+                            keypoints["frame"] = index
+                            keypoints["detect"] = 1
+                            keypoints.update({"landmarks_68": landmarks_68})
+                            face_name = "%6d.jpg" % index
+                            face_path = os.path.join(video_output_dir, face_name)
+                            face_img = face_img.resize((size, size))
+                            last_frame = face_img
+                            last_keypoints = keypoints
+                        else:
+                            wrong_frames += 1
+                        try:
+                            last_frame.save(face_path)
+                        except AttributeError:
+                            last_keypoints = {
+                                "frame": index,
+                                "detect": 0,
+                                "landmarks_68": [[0, 0] for i in range(68)],
+                                "nose": (0, 0),
+                                "mouth_right": (0, 0),
+                                "right_eye": (0, 0),
+                                "left_eye": (0, 0),
+                                "mouth_left": (0, 0),
+                            }
+                            failed_frames += 1
+
+                        df = df.append(last_keypoints, ignore_index=True)
+
+                    else:
                         keypoints = {
                             "frame": index,
                             "detect": 0,
+                            "landmarks_68": [[0, 0] for i in range(68)],
                             "nose": (0, 0),
                             "mouth_right": (0, 0),
                             "right_eye": (0, 0),
                             "left_eye": (0, 0),
                             "mouth_left": (0, 0),
                         }
-                    else:
-                        keypoints["frame"] = index
-                        keypoints["detect"] = 1
-                    if face_img is not None:
-                        face_name = "%6d.jpg" % index
-                        face_path = os.path.join(video_output_dir, face_name)
-                        face_img = face_img.resize((size, size))
-                        face_img.save(face_path)
-                    else:
                         failed_frames += 1
-                    df = df.append(keypoints, ignore_index=True)
+                        df = df.append(keypoints, ignore_index=True)
                 else:
                     break
             cap.release()
@@ -265,6 +324,7 @@ def parse_video_frames():
             print(video_input_file + "does not exist.")
         time.sleep(5)
     print(f"{failed_frames}/{total_frames} frames failed")
+    print(f"{wrong_frames}/{total_frames} frames are wrong")
 
 
 if __name__ == "__main__":
