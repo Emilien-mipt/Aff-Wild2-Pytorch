@@ -91,6 +91,7 @@ def run_trainer(cfg):
     # Prints
     print("Train part: ")
     train_data_chunks.print_size()
+
     print(train_dataset[5][0].shape)
     print(train_dataset[5][1].shape)
     print(train_dataset[5][2].shape)

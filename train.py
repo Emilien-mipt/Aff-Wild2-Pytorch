@@ -26,12 +26,14 @@ def train_one_epoch(epoch, model, device, train_loader, criterion, optimizer):
         # zero the gradients
         optimizer.zero_grad()
         # distribute data to device
-        images, labels = images.to(device), labels.to(device)
+        images, labels, landmarks = images.to(device), labels.to(device), landmarks.to(device)
 
         batch_size = images.size(0)
 
         # Forward
-        output = rnn_decoder(cnn_encoder(images))  # output has dim = (batch, number of classes (valence, arousal))
+        output = rnn_decoder(
+            cnn_encoder(images, landmarks)
+        )  # output has dim = (batch, number of classes (valence, arousal))
         valence_loss = criterion(output[:, :, 0], labels[:, :, 0])
         arousal_loss = criterion(output[:, :, 1], labels[:, :, 1])
         # Compute loss
@@ -73,13 +75,13 @@ def val_one_epoch(valid_loader, model, metric, ccc_eps, device):
     for step, (images, labels, landmarks) in enumerate(tqdm(valid_loader)):
         # measure data loading time
         data_time.update(time.time() - end)
-        images = images.to(device)
-        labels = labels.to(device)
+        # distribute data to device
+        images, labels, landmarks = images.to(device), labels.to(device), landmarks.to(device)
 
         batch_size = labels.size(0)
         # compute loss
         with torch.no_grad():
-            output = rnn_decoder(cnn_encoder(images))  # output has dim = (batch, number of classes)
+            output = rnn_decoder(cnn_encoder(images, landmarks))  # output has dim = (batch, number of classes)
             # Calculate Valence and Arousal scores
             valence_pred = output[:, :, 0].to("cpu").numpy()
             valence_label = labels[:, :, 0].to("cpu").numpy()
