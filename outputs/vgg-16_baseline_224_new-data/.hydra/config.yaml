@@ -36,3 +36,5 @@ decoder_params:
   torch_script_path: ''
 optimizer:
   lr: 0.001
+scheduler:
+  gamma: 0.9
