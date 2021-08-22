@@ -1,6 +1,7 @@
 from albumentations import (
     Compose,
     HorizontalFlip,
+    KeypointParams,
     Normalize,
     RandomBrightnessContrast,
     Resize,
@@ -29,7 +30,8 @@ def get_transforms(mode, mean, std, size):
                     std=std,
                 ),
                 ToTensorV2(),
-            ]
+            ],
+            keypoint_params=KeypointParams(format="xy", remove_invisible=False),
         )
 
     elif mode == "valid":
@@ -41,5 +43,6 @@ def get_transforms(mode, mean, std, size):
                     std=std,
                 ),
                 ToTensorV2(),
-            ]
+            ],
+            keypoint_params=KeypointParams(format="xy", remove_invisible=False),
         )
