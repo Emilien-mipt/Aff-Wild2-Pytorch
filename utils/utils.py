@@ -5,6 +5,7 @@ import os
 import random
 import time
 
+import matplotlib.pyplot as plt
 import numpy as np
 import torch
 
@@ -93,3 +94,29 @@ def load_model(model, path_to_model):
         arousal,
     )
     return cp
+
+
+def save_image(input_tensor, y_item, landmarks, fig_path, index, mean, std):
+    """Show a single image."""
+    image = input_tensor.permute(1, 2, 0).numpy()
+    image = std * image + mean
+    plt.imshow(image.clip(0, 1))
+    plt.plot(*zip(*landmarks), marker="o", color="r", ls="")
+    title = str(y_item[0]) + str(", ") + str(y_item[1])
+    plt.title(title)
+    fig_name = f"{index}.png"
+    fig_path = fig_path
+    plt.savefig(os.path.join(fig_path, fig_name))
+    plt.close()
+
+
+def save_batch(dataloader, fig_path, seq_indx, mean, std):
+    """Show images for a batch."""
+    X_batch, y_batch, landmark_batch = next(iter(dataloader))
+    print("Saving batch...")
+    X_batch = X_batch[:, seq_indx, :, :, :]
+    y_batch = y_batch[:, seq_indx, :]
+    landmark_batch = landmark_batch[:, seq_indx, :]
+    for index, (x_item, y_item, landmarks) in enumerate(zip(X_batch, y_batch, landmark_batch)):
+        save_image(x_item, y_item, landmarks, fig_path, index, mean, std)
+    print("Batch has been saved!")

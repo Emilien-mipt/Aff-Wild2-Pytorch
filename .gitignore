@@ -15,3 +15,6 @@ weights/
 *.pt
 *.pth
 *.pkl
+
+# images
+*.png

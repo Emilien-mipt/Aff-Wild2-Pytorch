@@ -1,5 +1,6 @@
 import logging
 import os
+import random
 import time
 
 import hydra
@@ -19,7 +20,7 @@ from models.rnn_decoder import RNNDecoder
 from train import train_one_epoch, val_one_epoch
 from transforms import get_transforms
 from utils.chunk_creator import ChunkCreator
-from utils.utils import load_model, save_model, seed_torch
+from utils.utils import load_model, save_batch, save_model, seed_torch
 
 
 def run_trainer(cfg):
@@ -103,6 +104,11 @@ def run_trainer(cfg):
         num_workers=num_workers,
         drop_last=True,
     )
+
+    if cfg.dataset.save_batch_fig:
+        seq_indx = random.randint(0, seq_len)
+        path_to_batch = "./logs"
+        save_batch(train_loader, path_to_batch, seq_indx, mean, std)
 
     # Create val dataset and dataloader
     val_data_chunks = ChunkCreator(path_data=val_data_path, path_label=val_label_path, seq_len=seq_len)
