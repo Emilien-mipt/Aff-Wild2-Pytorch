@@ -1,0 +1,4 @@
+[2021-08-31 14:25:11,374][__main__][INFO] - Sequence length: 80
+[2021-08-31 14:25:11,374][__main__][INFO] - Device: 0
+[2021-08-31 14:25:11,374][__main__][INFO] - Batch size: 32
+[2021-08-31 14:25:11,374][__main__][INFO] - Input size: 224

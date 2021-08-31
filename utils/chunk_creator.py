@@ -1,3 +1,4 @@
+import json
 import os
 
 import numpy as np
@@ -45,22 +46,11 @@ class ChunkCreator:
             if len(label_chunk) == self.seq_len:
                 self.result_labels.append(label_chunk)
 
-    def _produce_landmark_chunk(self, landmarks_df, index_list, multy):
-        landmark_list = []
+    def _produce_landmark_chunk(self, landmarks_df):
         landmark_str_array = landmarks_df["landmarks_68"].to_numpy()
-        if not multy:
-            landmark_str_array = landmark_str_array[index_list]
-        for array in landmark_str_array:
-            try:
-                transformed_list = [np.fromstring(x.lstrip()[1:-1], sep=" ") for x in array[1:-1].split("\n")]
-            except TypeError:
-                print(type(array))
-                transformed_list = [[0, 0] for _ in range(68)]
-
-            landmark_list.append(transformed_list)
-            if len(landmark_list[0]) == 0:
-                landmark_list = [[0, 0] for _ in range(68)]
-
+        # Convert string array to float array
+        landmark_list = [json.loads(array) for array in landmark_str_array]
+        # Produce chunks and add them to the result list
         for x in range(0, len(landmark_list), self.seq_len):
             landmark_chunk = landmark_list[x : x + self.seq_len]
             if len(landmark_chunk) == self.seq_len:
@@ -68,9 +58,6 @@ class ChunkCreator:
 
     def _chunk_folder(self, folder_name):
         """Produce chunks for one folder."""
-        multy = False
-        if folder_name.find("left") >= 0 or folder_name.find("right") >= 0:
-            multy = True
         # Produce chunk for data
         frame_list = os.listdir(os.path.join(self.data_path, folder_name))
         frame_list.remove("keypoints.csv")
@@ -90,7 +77,7 @@ class ChunkCreator:
         # Now produce chunk for corresponding landmarks
         keypoint_path = os.path.join(self.data_path, folder_name, "keypoints.csv")
         landmarks_df = pd.read_csv(keypoint_path)
-        self._produce_landmark_chunk(landmarks_df, frame_index_list, multy)
+        self._produce_landmark_chunk(landmarks_df)
 
     def form_result_list(self):
         """Iterate over all dirs and fill resulting lists with corresponding data and label chunks."""
